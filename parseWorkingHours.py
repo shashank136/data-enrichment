@@ -1,5 +1,5 @@
 import re
-
+import phpserialize
 
 def parseDate(unparsed_schedule):
     results = {}
@@ -23,8 +23,7 @@ def parseDate(unparsed_schedule):
     timePattern = "?:\d{1,2}(?:[:|\.]\d{1,2})?)\s*(?:[ap][\.]?m\.?";
 
     dict = {'weekdayPattern': dayPattern,
-            'timeHoursPattern': timePattern,
-            'string3': 'great'}
+            'timeHoursPattern': timePattern}
 
     # Day Pattern
     pattern = """
@@ -63,8 +62,14 @@ def parseDate(unparsed_schedule):
                 enddayIndex = index_of(daysInWeek,endDay);
                 startTime = m.group(5);
                 endTime = m.group(7);
+                if(enddayIndex<startDayIndex):
+                    enddayIndex = enddayIndex + 7;
                 for i in range(startDayIndex,enddayIndex+1):
-                    currentDayName = daysInWeek[i];
+                    if i>=7 :
+                        currentDayIndex = i-7;
+                    else:
+                        currentDayIndex = i;
+                    currentDayName = daysInWeek[currentDayIndex];
                     results[currentDayName].startingtime = startTime;
                     results[currentDayName].closingtime = endTime;
             else:
@@ -86,7 +91,7 @@ def index_of(stringArray, currentStr):
 
 def parseWorkingHours(workinghoursString):
     parsedObjects = parseDate(workinghoursString);
-    resultString = formatParseDate(parsedObjects);
+    resultString = serializeParseDate(parsedObjects);
     #print(resultString);
     return resultString;
 
@@ -114,6 +119,21 @@ class DayOfWeek(object):
             return self.dayName+": From "+self.startingtime+" to "+self.closingtime+".";
         else:
             return self.dayName;
+
+def serializeParseDate(dayObjects):
+    openingHoursArray = [];
+    for (key, value) in dayObjects.items():
+        openingHours = {};
+        openingHours["listing_day"] = value.dayName.upper();
+        if value.startingtime != None:
+            openingHours["listing_time_from"] = value.startingtime;
+        if value.closingtime != None:
+            openingHours["listing_time_to"] = value.closingtime;
+        if value.startingtime == None or value.closingtime == None:
+            openingHours["listing_custom"] = "closed";
+        openingHoursArray.append(openingHours);
+    serializedOpeningHours = phpserialize.serialize(openingHoursArray);
+    print(serializedOpeningHours);
 
 def formatParseDate(dayObjects):
     output = """
