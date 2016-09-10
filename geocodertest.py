@@ -1,3 +1,4 @@
+#May the force be with you
 import csv
 import logging
 import glob
@@ -6,14 +7,20 @@ import time
 import googlemaps
 import parseWorkingHours
 from slugify import slugify
+import simplejson as json
+import urllib
+import requests
+import bs4
+import re
 
 KEYS = [ 
         'AIzaSyCgs8C71RqvWoeO69XBXVPQH006i7v4IkM', #Ananth's
         'AIzaSyCcijQW6eCvvt1ToSkjaGA4R22qBdZ0XsI' #Aakash's
+        'AIzaSyATi8d86dHYR3U39S9_zg_dWZIFK4c86ko' #Shubhankar's
 ]
 key_index = 0
 
-
+count=0
 class geocoderTest():
     def __init__(self, geo_type='google'):
 
@@ -30,13 +37,14 @@ class geocoderTest():
 
     def process(self):
         fileNames = glob.glob('./input/*.csv');
+        print fileNames
         for fileName in fileNames:
             self.rows = []
             self.FIELDS = []
             fileBaseName = os.path.splitext(os.path.basename(fileName))[0];
             self._readCSV(fileName);
             self._addGeocoding();
-            #self._addLocationPhoto();
+            self._addLocationPhoto();
             self._addFeaturedImage();
             self._formatWorkinghours();
             self._writeCSV("./output/processed_"+fileBaseName+".csv");
@@ -63,11 +71,13 @@ class geocoderTest():
                 row["Locality"] = row["Locality"].title()
                 row["City"] = row["City"].title()
                 address = "%s %s, %s, %s, %s" % (row["Street Address"],row["Locality"],row["City"],row["Pincode"],row["Country"])
+                address_geo = "%s, %s" % (row["City"], row["Country"])#address for locating lat, lon
+                
                 row["fullAddress"] = address;
                 row["listing_locations"] = row["Locality"] + ", " + row["City"];
                 try:
                     time.sleep(1); # To prevent error from Google API for concurrent calls
-                    geocode_result = self.gmaps.geocode(address);
+                    geocode_result = self.gmaps.geocode(address_geo);
                     if(len(geocode_result)>0):
                         row["lat"] = geocode_result[0]['geometry']['location']['lat'];
                         row["lng"] = geocode_result[0]['geometry']['location']['lng'];
@@ -94,21 +104,65 @@ class geocoderTest():
         print("Successfully completed processing of (" + str(geoLocationAdded-geoLocationFailed) + "/" + str(geoLocationAdded) + ") rows.");
 
     def _addLocationPhoto(self):
+        global count
+        list_pics=[]
         for row in self.rows:
             if row["lat"]==0:
                 row['location_image'] = '';
             else:
                 myLocation = (row["lat"], row["lng"]);
-                #locationResult = self.gmaps.places_nearby(myLocation);
-                #photoReference = locationResult['results'][0]['photos'][0]['photo_reference'];
-                #placesPhoto = self.gmaps.places_photo(photoReference, max_width=1000);
-                imageFileName = "./output/image_"+slugify(row["Name"])+".jpg"
-                #imageFile = open(imageFileName, 'w');
-                #for picString in placesPhoto:
-                #    imageFile.write(picString);
-                #imageFile.close();
-                #time.sleep(1);  # To prevent error from Google API for concurrent calls
-                row['location_image'] = imageFileName;
+                print myLocation;
+                #input="|".join(map(str,list(row['Name'].split(" "))))
+                url1='https://maps.googleapis.com/maps/api/place/autocomplete/json?input='+row['Name']+'&types=establishment&location='+str(row['lat'])+','+str(row['lng'])+'&radius=50000&key='+KEYS[key_index]
+
+                print 'Autocomplete Url', url1
+                #s=row['Name']
+                #print "s",s
+                #texto="|".join(map(str,list(s.strip().split())[1:]))
+                #print "textto",texto
+                # predictions=requests.get(url1).json().get('predictions')
+                # for i in range(len(predictions)):
+                #     subject=predictions[i]['description']
+                #     if re.search(r"\b(?=\w)%s\b(?!\w)" % texto, subject, re.IGNORECASE):
+                #         placeid=predictions[i]['place_id']
+                #         print "place id",placeid
+                #         break
+                # if i==len(predictions)-1:
+                #     placeid=0
+                try:
+                    url2='https://maps.googleapis.com/maps/api/place/details/json?placeid='
+                    placeid=requests.get(url1).json().get('predictions')[0]['place_id'];
+                    url2=url2+placeid+"&key="+KEYS[key_index]
+                    print 'Place id ',row['Name'], url2
+                    details=requests.get(url2).json().get('result')['photos']
+                    for i in range(len(details)):
+                        url3='https://maps.googleapis.com/maps/api/place/photo?maxwidth=1600&photoreference='+details[i]['photo_reference']+'&key='+KEYS[key_index]
+                        t=requests.get(url3)
+                        print t.url
+                        list_pics.append(t.url) #resolving redirects it returns final url
+                    count=count+1
+                    #x=row['listing_gallery']
+                    row["listing gallery"]=",".join(list_pics)
+                    print "added",row['Name']
+                except:
+                    pass
+                    #photo=requests.get(url3)
+                    #soupPic=bs4.BeautifulSoup(photo.text,'html')
+                    #pic_url=soupPic.
+                    #print pic_url;
+                    #locationResult = self.gmaps.places_nearby(myLocation);
+                    #photoReference = locationResult['results'][0]['photos'][0]['photo_reference'];
+                    #placesPhoto = self.gmaps.places_photo(photoReference, max_width=1000);
+                    #101imageFileName = "./output/image_"+slugify(row["Name"])+".jpg"
+                    #imageFileName = "./output/image_"+photo+".jpg"
+                    
+                    #imageFile = open(imageFileName, 'w');
+                    #for picString in placesPhoto:
+                    #    imageFile.write(picString);
+                    #imageFile.close();
+                    #time.sleep(1);  # To prevent error from Google API for concurrent calls
+                
+                
 
     def _addFeaturedImage(self):
         for row in self.rows:
@@ -141,3 +195,4 @@ if __name__ == '__main__':
     logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
     f = geocoderTest()
     f.process()
+    print 'added '+str(count)
