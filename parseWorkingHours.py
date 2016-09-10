@@ -182,7 +182,7 @@ def formatParseDate(dayObjects):
             output = output.replace(value.endTimeString, value.closingtime);
 
     #print(output);
-    return output;
+    return re.sub('[\s+]', '', output);
 
 if __name__ == '__main__':
     interactive_test();
