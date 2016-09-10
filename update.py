@@ -1,17 +1,17 @@
 import pandas as pd
 import glob
-
+import phpserialize
 
 # define similarly
-def listing_banner_street_view(lat, lng):
-    return "a:5:{s:8:\"latitude\";s:9:\"" + str(lat) + "\";s:9:\"longitude\";s:19:\"" + str(
-        lng) + "\";s:4:\"zoom\";s:1:\"1\";s:7:\"heading\";s:3:\"-18\";s:5:\"pitch\";s:2:\"25\";}"
-
-
 def listing_street_view_location(lat, lng):
-    return "a:5:{s:8:\"latitude\";s:9:\"" + str(lat) + "\";s:9:\"longitude\";s:19:\"" + str(
-        lng) + "\";s:4:\"zoom\";s:1:\"1\";s:7:\"heading\";s:3:\"-18\";s:5:\"pitch\";s:2:\"25\";}"
-
+    dict = {};
+    dict["latitude"] = str(lat);
+    dict["longitude"] = str(lng);
+    dict["zoom"] = "1";
+    dict["heading"] = "-18";
+    dict["pitch"] = "25";
+    serializedString = phpserialize.serialize(dict);
+    return serializedString;
 
 files_li = glob.glob("./output/processed_*.csv")  # update path here
 fields = ['lat', 'lng']  # for filling lat and lng
@@ -101,7 +101,7 @@ for file in files_li:
         #############################
         # call functions from here  #
         #############################
-        li1.append(listing_banner_street_view(csv_input.lat[x], csv_input.lng[x]))
+        li1.append(listing_street_view_location(csv_input.lat[x], csv_input.lng[x]))
         li2.append(listing_street_view_location(csv_input.lat[x], csv_input.lng[x]))
     # csv_input.loc[ x ,'listing_banner_street_view'] = listing_banner_street_view(csv_input.lat[x], csv_input.lng[x])
 

@@ -7,7 +7,6 @@ import time
 import googlemaps
 import parseWorkingHours
 from slugify import slugify
-import simplejson as json
 import urllib
 import requests
 import bs4

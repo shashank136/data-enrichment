@@ -133,76 +133,7 @@ def serializeParseDate(dayObjects):
             openingHours["listing_custom"] = "closed";
         openingHoursArray.append(openingHours);
     serializedOpeningHours = phpserialize.serialize(openingHoursArray);
-    print(serializedOpeningHours);
-
-def formatParseDate(dayObjects):
-    output = """
-    a:7:{i: 0;
-    a:4:{s: 11:"listing_day";
-    s:6:"MONDAY";
-    s:17:"listing_time_from";
-    s:8:"mondaystarttime";
-    s:15:"listing_time_to";
-    s:8:"mondayendtime";
-    s:14:"listing_custom";
-    s:0:"";}i:1;
-    a:4:{s: 11:"listing_day";
-    s:7:"TUESDAY";
-    s:17:"listing_time_from";
-    s:8:"tuesdaystarttime";
-    s:15:"listing_time_to";
-    s:8:"tuesdayendtime";
-    s:14:"listing_custom";
-    s:0:"";}i:2;
-    a:4:{s: 11:"listing_day";
-    s:9:"WEDNESDAY";
-    s:17:"listing_time_from";
-    s:8:"wednesdaystarttime";
-    s:15:"listing_time_to";
-    s:8:"wednesdayendtime";
-    s:14:"listing_custom";
-    s:0:"";}i:3;
-    a:4:{s: 11:"listing_day";
-    s:8:"THURSDAY";
-    s:17:"listing_time_from";
-    s:8:"thursdaystarttime";
-    s:15:"listing_time_to";
-    s:8:"thursdayendtime";
-    s:14:"listing_custom";
-    s:0:"";}i:4;
-    a:4:{s: 11:"listing_day";
-    s:6:"FRIDAY";
-    s:17:"listing_time_from";
-    s:8:"fridaystarttime";
-    s:15:"listing_time_to";
-    s:8:"fridayendtime";
-    s:14:"listing_custom";
-    s:0:"";}i:5;
-    a:4:{s: 11:"listing_day";
-    s:8:"SATURDAY";
-    s:17:"listing_time_from";
-    s:8:"saturdaystarttime";
-    s:15:"listing_time_to";
-    s:8:"sarturdayendtime";
-    s:14:"listing_custom";
-    s:0:"";}i:6;
-    a:2:{s: 11:"listing_day";
-    s:6:"SUNDAY";
-    s:17:"listing_time_from";
-    s:8:"sundaystarttime";
-    s:15:"listing_time_to";
-    s:8:"sundayendtime";
-    s:14:"listing_custom";
-    s:6:"closed";}}
-    """
-    for (key,value) in dayObjects.items():
-        if(value.startingtime):
-            output = output.replace(value.startTimeString, value.startingtime);
-        if(value.closingtime):
-            output = output.replace(value.endTimeString, value.closingtime);
-
-    #print(output);
-    return re.sub('[\s+]', '', output);
+    return serializedOpeningHours;
 
 if __name__ == '__main__':
     interactive_test();
