@@ -76,7 +76,7 @@ class geocoderTest():
                 row["listing_locations"] = row["Locality"] + ", " + row["City"];
                 try:
                     time.sleep(1); # To prevent error from Google API for concurrent calls
-                    geocode_result = self.gmaps.geocode(address_geo);
+                    geocode_result = self.gmaps.geocode(address);
                     if(len(geocode_result)>0):
                         row["lat"] = geocode_result[0]['geometry']['location']['lat'];
                         row["lng"] = geocode_result[0]['geometry']['location']['lng'];
