@@ -123,12 +123,12 @@ class geocoderTest():
                         t=requests.get(url3)
                         print t.url
                         list_pics.append(t.url) #resolving redirects it returns final url
-                    count=count+1
-                    #x=row['listing_gallery']
-                    row["listing gallery"]=",".join(list_pics)
+                    
+                    str_place=",".join(list_pics)
+                    row["Images URL"]=str_place+row["Images URL"]
                     print "added",row['Name']
-                except:
-                    pass
+                except Exception as err:
+                    print err
                    
                 
 
