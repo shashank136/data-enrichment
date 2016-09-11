@@ -57,7 +57,7 @@ class geocoderTest():
         # skip the head row
         # next(reader)
         # append new columns
-        reader.fieldnames.extend(["listing_locations", "featured_image", "location_image", "fullAddress", "lat", "lng"]);
+        reader.fieldnames.extend(["listing_locations", "featured_image", "location_image", "fullAddress", "lat", "lng","prec_loc"]);
         self.FIELDS = reader.fieldnames;
         self.rows.extend(reader);
         inputFile.close();
@@ -103,33 +103,34 @@ class geocoderTest():
         print("Successfully completed processing of (" + str(geoLocationAdded-geoLocationFailed) + "/" + str(geoLocationAdded) + ") rows.");
 
     def _addLocationPhoto(self):
-        list_pics=[]
         for row in self.rows:
+            list_pics=[]
             if row["lat"]==0:
                 row['location_image'] = '';
             else:
                 myLocation = (row["lat"], row["lng"]);
-                print myLocation;
                 
-                url1='https://maps.googleapis.com/maps/api/place/autocomplete/json?input='+row['Name']+'&types=establishment&location='+str(row['lat'])+','+str(row['lng'])+'&radius=500000&key='+KEYS[key_index]
+                url1='https://maps.googleapis.com/maps/api/place/autocomplete/json?input='+row['Name']+'&types=establishment&location='+str(row['lat'])+','+str(row['lng'])+'&radius=50000&key='+KEYS[key_index]
+                #print 'Autocomplete URL',url1
                 try:
                     url2='https://maps.googleapis.com/maps/api/place/details/json?placeid='
                     placeid=requests.get(url1).json().get('predictions')[0]['place_id'];
-                    url2=url2+placeid+"&key="+KEYS[key_index]
-                    if placeid:
-                        row["lat"] = requests.get(url2).json().get('result')["geometry"]["location"]["lat"]
-                        row["lng"]= requests.get(url2).json().get('result')["geometry"]["location"]["lng"]
-                                  
+                    url2=url2+placeid+"&key="+KEYS[key_index]              
                     #print 'Place id ',row['Name'], url2
-                    
                     details=requests.get(url2).json().get('result')['photos']
-                    
+                 
                     for i in range(len(details)):
                         url3='https://maps.googleapis.com/maps/api/place/photo?maxwidth=1600&photoreference='+details[i]['photo_reference']+'&key='+KEYS[key_index]
                         t=requests.get(url3)
                         print t.url
                         list_pics.append(t.url) #resolving redirects it returns final url
-                    
+                    #if list_pics==[]:
+                     #   row["unp_loc"]="true"
+                    if list_pics!=[]:
+                        row["lat"] = requests.get(url2).json().get('result')["geometry"]["location"]["lat"]
+                        row["lng"]= requests.get(url2).json().get('result')["geometry"]["location"]["lng"]
+                        row["prec_loc"]="true"
+
                     str_place=",".join(list_pics)
                     row["Images URL"]=str_place+row["Images URL"]
                     print "added",row['Name']
