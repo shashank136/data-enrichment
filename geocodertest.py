@@ -111,13 +111,19 @@ class geocoderTest():
                 myLocation = (row["lat"], row["lng"]);
                 print myLocation;
                 
-                url1='https://maps.googleapis.com/maps/api/place/autocomplete/json?input='+row['Name']+'&types=establishment&location='+str(row['lat'])+','+str(row['lng'])+'&radius=50000&key='+KEYS[key_index]
+                url1='https://maps.googleapis.com/maps/api/place/autocomplete/json?input='+row['Name']+'&types=establishment&location='+str(row['lat'])+','+str(row['lng'])+'&radius=500000&key='+KEYS[key_index]
                 try:
                     url2='https://maps.googleapis.com/maps/api/place/details/json?placeid='
                     placeid=requests.get(url1).json().get('predictions')[0]['place_id'];
                     url2=url2+placeid+"&key="+KEYS[key_index]
-                    print 'Place id ',row['Name'], url2
+                    if placeid:
+                        row["lat"] = requests.get(url2).json().get('result')["geometry"]["location"]["lat"]
+                        row["lng"]= requests.get(url2).json().get('result')["geometry"]["location"]["lng"]
+                                  
+                    #print 'Place id ',row['Name'], url2
+                    
                     details=requests.get(url2).json().get('result')['photos']
+                    
                     for i in range(len(details)):
                         url3='https://maps.googleapis.com/maps/api/place/photo?maxwidth=1600&photoreference='+details[i]['photo_reference']+'&key='+KEYS[key_index]
                         t=requests.get(url3)
