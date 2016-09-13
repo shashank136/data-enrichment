@@ -1,4 +1,3 @@
-#May the force be with you
 import csv
 import logging
 import glob
@@ -11,6 +10,8 @@ import urllib
 import requests
 import bs4
 import re
+import math
+
 
 KEYS = [ 
         'AIzaSyCgs8C71RqvWoeO69XBXVPQH006i7v4IkM', #Ananth's
@@ -70,35 +71,50 @@ class geocoderTest():
                 row["Locality"] = row["Locality"].title()
                 row["City"] = row["City"].title()
                 address = "%s %s, %s, %s, %s" % (row["Street Address"],row["Locality"],row["City"],row["Pincode"],row["Country"])
-                address_geo = "%s, %s" % (row["City"], row["Country"])#address for locating lat, lon
+                
+                address_prec = "%s, %s" % (row["City"], row["Country"]) #calculating precise location
                 
                 row["fullAddress"] = address;
                 row["listing_locations"] = row["Locality"] + ", " + row["City"];
+                geocode_city=self.gmaps.geocode(address_prec) #geocodes for city
+                lat_prec=geocode_city[0]['geometry']['location']['lat']
+                lng_prec=geocode_city[0]['geometry']['location']['lng']
+                
                 try:
-                    time.sleep(1); # To prevent error from Google API for concurrent calls
+                    time.sleep(1); # To prevent error from Google API for concurrent calls              
                     geocode_result = self.gmaps.geocode(address);
                     if(len(geocode_result)>0):
                         row["lat"] = geocode_result[0]['geometry']['location']['lat'];
                         row["lng"] = geocode_result[0]['geometry']['location']['lng'];
                     else:
-                        #logging.warning("Geocode API failure for : '" + address + "'");
+                        logging.warning("Geocode API failure for : '" + address + "'");
+                        time.sleep(1);
                         geocode_result = self.gmaps.geocode(row["Name"] + ", " + address);
                         if (len(geocode_result) > 0):
                             row["lat"] = geocode_result[0]['geometry']['location']['lat'];
                             row["lng"] = geocode_result[0]['geometry']['location']['lng'];
                         else:
-                            logging.warning("---- Trying by adding name also failed for : '" + address + "'");
-                            geoLocationFailed+=1;
-                            row["lat"] = 0;
-                            row["lng"] = 0;
+                            logging.warning("Trying by adding name failed for: '" + address + "'"+"hence taking city geocodes");
+                            #geoLocationFailed+=1;
+                            row["lat"] = lat_prec;
+                            row["lng"] = lng_prec;
+
                 except Exception as err:
                     logging.exception("Something awful happened when processing '"+address+"'");
                     geoLocationFailed+=1;
-                    row["lat"] = 0;
-                    row["lng"] = 0;
+        
+                if int(math.ceil(abs(float(lat_prec)-float(row["lat"])))) ==1 and int(math.ceil(abs(float(lng_prec)-float(row["lng"])))) ==1:
+                    '''
+                    for checking precise location by
+                    getting difference in city geocodes
+                    and place geocodes
+                    '''
+                    row["prec_loc"]="true"
+
                 geoLocationAdded+=1;
                 if (geoLocationAdded%20==0):
                     print("Processed "+str(geoLocationAdded)+" rows.");
+
         time.sleep(1); # To prevent error from Google API for concurrent calls
         print("Successfully completed processing of (" + str(geoLocationAdded-geoLocationFailed) + "/" + str(geoLocationAdded) + ") rows.");
 
@@ -109,7 +125,7 @@ class geocoderTest():
                 row['location_image'] = '';
             else:
                 myLocation = (row["lat"], row["lng"]);
-                
+                #print myLocation
                 url1='https://maps.googleapis.com/maps/api/place/autocomplete/json?input='+row['Name']+'&types=establishment&location='+str(row['lat'])+','+str(row['lng'])+'&radius=50000&key='+KEYS[key_index]
                 #print 'Autocomplete URL',url1
                 try:
@@ -122,18 +138,11 @@ class geocoderTest():
                     for i in range(len(details)):
                         url3='https://maps.googleapis.com/maps/api/place/photo?maxwidth=1600&photoreference='+details[i]['photo_reference']+'&key='+KEYS[key_index]
                         t=requests.get(url3)
-                        print t.url
                         list_pics.append(t.url) #resolving redirects it returns final url
-                    #if list_pics==[]:
-                     #   row["unp_loc"]="true"
-                    if list_pics!=[]:
-                        row["lat"] = requests.get(url2).json().get('result')["geometry"]["location"]["lat"]
-                        row["lng"]= requests.get(url2).json().get('result')["geometry"]["location"]["lng"]
-                        row["prec_loc"]="true"
 
                     str_place=",".join(list_pics)
                     row["Images URL"]=str_place+row["Images URL"]
-                    print "added",row['Name']
+                   
                 except Exception as err:
                     print err
                    
