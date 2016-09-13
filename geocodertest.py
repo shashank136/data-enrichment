@@ -110,6 +110,10 @@ class geocoderTest():
                     and place geocodes
                     '''
                     row["prec_loc"]="true"
+                else:
+                    row["lat"] = lat_prec;
+                    row["lng"] = lng_prec;
+                        
 
                 geoLocationAdded+=1;
                 if (geoLocationAdded%20==0):
