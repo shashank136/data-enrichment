@@ -143,8 +143,8 @@ class geocoderTest():
                     str_place=",".join(list_pics)
                     row["Images URL"]=str_place+row["Images URL"]
                    
-                except Exception as err:
-                    print err
+                except Exception:
+                    print "Unable to fetch image for "+row['Name']
                    
                 
 
