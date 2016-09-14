@@ -11,11 +11,12 @@ import requests
 import bs4
 import re
 import math
+from imagesFetch import fetch
 
 
 KEYS = [ 
         'AIzaSyCgs8C71RqvWoeO69XBXVPQH006i7v4IkM', #Ananth's
-        'AIzaSyCcijQW6eCvvt1ToSkjaGA4R22qBdZ0XsI' #Aakash's
+        'AIzaSyCcijQW6eCvvt1ToSkjaGA4R22qBdZ0XsI', #Aakash's
         'AIzaSyATi8d86dHYR3U39S9_zg_dWZIFK4c86ko' #Shubhankar's
 ]
 key_index = 0
@@ -113,7 +114,6 @@ class geocoderTest():
                 else:
                     row["lat"] = lat_prec;
                     row["lng"] = lng_prec;
-                        
 
                 geoLocationAdded+=1;
                 if (geoLocationAdded%20==0):
@@ -148,14 +148,16 @@ class geocoderTest():
                     row["Images URL"]=str_place+row["Images URL"]
                    
                 except Exception:
-                    print "Unable to fetch image for "+row['Name']
+                    print "Image not found for "+row['Name']
                    
                 
 
     def _addFeaturedImage(self):
         for row in self.rows:
             if not row["Images URL"]:
-                row['featured_image'] = '';
+                #image=imagesFetch(row["Name"])
+                row['featured_image'] = fetch(row['Name']); #creates png image
+                print row['featured_image']
             else:
                 row['featured_image'] = row['Images URL'].split(",")[0].strip();
 
