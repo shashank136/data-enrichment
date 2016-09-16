@@ -5,7 +5,6 @@ import os
 import glob
 def fetch(s):
 	li=""
-	add=glob.glob("./output/images")
 	x=re.compile(r'[A-Z]')
 	x=x.findall(s)
 	for i in range(len(x)):
@@ -20,11 +19,6 @@ def fetch(s):
 	    W=W+(w-W)+20
 	d=ImageDraw.Draw(base)
 	d.text(((W-w)/2,(H-h)/2),li,font=fnt,fill="white")
-	try:
-		os.makedirs(add)
-	except Exception:
-		pass
-	base.save("./output/images/"+s+".png")
-	return "./output/images/"+s+".png"
+	return "static.careerbreeder.com/output/images/"+s+".png"
 
 
