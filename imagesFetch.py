@@ -24,7 +24,7 @@ def fetch(s):
 		os.makedirs(add)
 	except Exception:
 		pass
-	#base.save("./output/images/"+s+".png")
-	return "static.careerbreeder.com/output/images/"+s+".png"
+	base.save("./output/images/"+s+".png")
+	return "./output/images/"+s+".png"
 
 
