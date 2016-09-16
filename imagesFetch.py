@@ -9,7 +9,7 @@ def fetch(s):
 	x=x.findall(s)
 	for i in range(len(x)):
 		li+=x[i]
-	W,H=(500,500)
+	W,H=(850,450)
 	base=Image.new("RGBA",(W,H),(random.randrange(170,255),random.randrange(70,255),random.randrange(70,255)))
 	font_path=os.environ.get("font_path","./fonts/DroidSans-Bold.ttf")
 	fnt=ImageFont.truetype(font_path,100)
