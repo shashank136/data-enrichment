@@ -12,6 +12,7 @@ import bs4
 import re
 import math
 from imagesFetch import fetch
+from imagesFetch import correctImage
 
 
 KEYS = [ 
@@ -60,6 +61,7 @@ class geocoderTest():
         # next(reader)
         # append new columns
         reader.fieldnames.extend(["listing_locations", "featured_image", "location_image", "fullAddress", "lat", "lng","prec_loc"]);
+        reader.fieldnames.extend(["rating","reviews","author"]);
         self.FIELDS = reader.fieldnames;
         self.rows.extend(reader);
         inputFile.close();
@@ -124,9 +126,12 @@ class geocoderTest():
 
     def _addLocationPhoto(self):
         for row in self.rows:
+            details_reviews=[]
             list_pics=[]
+            str_place=""
             if row["lat"]==0:
-                row['location_image'] = '';
+               row['location_image'] = '';
+
             else:
                 myLocation = (row["lat"], row["lng"]);
                 #print myLocation
@@ -137,29 +142,54 @@ class geocoderTest():
                     placeid=requests.get(url1).json().get('predictions')[0]['place_id'];
                     url2=url2+placeid+"&key="+KEYS[key_index]              
                     #print 'Place id ',row['Name'], url2
-                    details=requests.get(url2).json().get('result')['photos']
-                 
+                    
+                    
+
+                    detail_placeid=requests.get(url2).json().get('result')
+                    details=detail_placeid['photos']
+                    details_reviews=detail_placeid['reviews']
+                    #print details_reviews
+                    
                     for i in range(len(details)):
                         url3='https://maps.googleapis.com/maps/api/place/photo?maxwidth=1600&photoreference='+details[i]['photo_reference']+'&key='+KEYS[key_index]
+
                         t=requests.get(url3)
                         list_pics.append(t.url) #resolving redirects it returns final url
 
                     str_place=",".join(list_pics)
-                    row["Images URL"]=str_place+row["Images URL"]
+                    #print "Images URL initail",row["Images URL"]
+                    x=row['Images URL']
+                    #new_imgs=correctImage(x) #checking the images for thumbnail
+                    #print "New imgs geo",new_imgs
+                    row["Images URL"]=str_place+row['Images URL']
                    
                 except Exception:
                     print "Image not found for "+row['Name']
-                   
-                
+                if row["prec_loc"]=="true":
+                    print "Adding rating and reviews"
+                    f._addRatingsReviews(details_reviews,row)
 
     def _addFeaturedImage(self):
         for row in self.rows:
             if not row["Images URL"]:
                 #image=imagesFetch(row["Name"])
                 row['featured_image'] = fetch(row['Name']); #creates png image
-                print row['featured_image']
+                row['Images URL']=row['featured_image'];
+                #print row['featured_image']
             else:
                 row['featured_image'] = row['Images URL'].split(",")[0].strip();
+    
+    def _addRatingsReviews(self,reviews,row):
+        row["rating"],row['author'],row['reviews']="","",""
+        for i in range(len(reviews)):
+            if i==(len(reviews)-1):
+                row["rating"]+=str(reviews[i]['rating'])
+                row['author']+=str(reviews[i]['author_name'])
+                row['reviews']+=str(reviews[i]['text'])
+            else:
+                row["rating"]+=str(reviews[i]['rating'])+","
+                row['author']+=str(reviews[i]['author_name'])+","
+                row['reviews']+=str(reviews[i]['text'])+","
 
     def _formatWorkinghours(self):
         for row in self.rows:
