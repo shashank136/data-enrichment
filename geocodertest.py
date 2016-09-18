@@ -56,10 +56,10 @@ class geocoderTest():
 
     def _readCSV(self, fileName):
         inputFile = open(fileName, 'r')
-        sample_text = ''.join(inputFile.readline() for x in range(3))
-        dialect = csv.Sniffer().sniff(sample_text);
-        inputFile.seek(0);
-        reader = csv.DictReader(inputFile, dialect=dialect)
+        #sample_text = ''.join(inputFile.readline() for x in range(3))
+        #dialect = csv.Sniffer().sniff(sample_text);
+        #inputFile.seek(0);
+        reader = csv.DictReader(inputFile, dialect=csv.excel)   # Using default excel dialect because sniffer fails to form the right container from 3 rows of sample text
         # skip the head row
         # next(reader)
         # append new columns
