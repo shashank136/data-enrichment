@@ -46,9 +46,9 @@ class geocoderTest():
             self.FIELDS = []
             fileBaseName = os.path.splitext(os.path.basename(fileName))[0]
             self._readCSV(fileName)
-            self._addGeocoding()
-            self._addLocationPhoto()
             self._removeThumbs()
+            self._addGeocoding()
+            self._addLocationPhoto()            
             self._addFeaturedImage()
             self._formatWorkinghours()
             fileCount +=1
@@ -183,12 +183,12 @@ class geocoderTest():
                     f._addRatingsReviews(details_reviews,row)
 
     def _removeThumbs(self):
-        for row in self.rows:
+        for row in self.rows:            
             row["Images URL"] = ",".join(filter(lambda url: not 'businessphoto-t' in url,row["Images URL"].split(",")))
 
     def _addFeaturedImage(self):
         for row in self.rows:
-            if not row["Images URL"] or 'businessphoto-t' in row["Images URL"]:
+            if not row["Images URL"]:
                 #image=imagesFetch(row["Name"])
                 row['featured_image'] = fetch(row['Name']); #creates png image
                 row['Images URL']=row['featured_image'];
