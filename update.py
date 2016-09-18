@@ -57,7 +57,6 @@ for file in files_li:
     # csv_input['listing_street_view_location_zoom'] = '16'
     csv_input['listing_type_metabox'] = csv_input['Services Offered']
     csv_input['locations'] = csv_input['listing_locations']
-    csv_input['claim_name'] = csv_input['listing_person']    
 
     csv_input['post_category'] = csv_input['Services Offered']
     csv_input['post_tag'] = csv_input['Services Offered']
