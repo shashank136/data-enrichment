@@ -183,7 +183,7 @@ class geocoderTest():
 
     def _addFeaturedImage(self):
         for row in self.rows:
-            if not row["Images URL"]:
+            if not row["Images URL"] or 'businessphoto-t' in row["Images URL"]:
                 #image=imagesFetch(row["Name"])
                 row['featured_image'] = fetch(row['Name']); #creates png image
                 row['Images URL']=row['featured_image'];

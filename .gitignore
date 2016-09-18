@@ -1,1 +1,4 @@
 output/images/
+venv
+.idea
+*.pyc
