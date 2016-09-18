@@ -56,10 +56,10 @@ class geocoderTest():
 
     def _readCSV(self, fileName):
         inputFile = open(fileName, 'r')
-        sample_text = ''.join(inputFile.readline() for x in range(3))
-        dialect = csv.Sniffer().sniff(sample_text);
-        inputFile.seek(0);
-        reader = csv.DictReader(inputFile, dialect=dialect)
+        #sample_text = ''.join(inputFile.readline() for x in range(3))
+        #dialect = csv.Sniffer().sniff(sample_text);
+        #inputFile.seek(0);
+        reader = csv.DictReader(inputFile, dialect=csv.excel)   # Using default excel dialect because sniffer fails to form the right container from 3 rows of sample text
         # skip the head row
         # next(reader)
         # append new columns
@@ -76,20 +76,20 @@ class geocoderTest():
 
         '''
         Each CSV file will be pertaining to a city.
-        We can save almost half of the calls to geocoder API if we calculate the City cordinates only once. 
+        We can save almost half of the calls to geocoder API if we calculate the City cordinates only once.
         '''
         row = self.rows[0]
         if row["City"] is None:
-            row = self.rows[1] #Highly unlikely that this will also fail        
+            row = self.rows[1] #Highly unlikely that this will also fail
         row["City"] = row["City"].title()
         city = row["City"]
-        print("Processing: " + row["City"])            
+        print("Processing: " + row["City"])
         address_prec = "%s, %s" % (row["City"], row["Country"]) #calculating precise location
         geocode_city=self.gmaps.geocode(address_prec) #geocodes for city
         lat_prec=geocode_city[0]['geometry']['location']['lat']
         lng_prec=geocode_city[0]['geometry']['location']['lng']
         time.sleep(1); # To prevent error from Google API for concurrent calls
-                
+
         for row in self.rows:
             if (row["lat"] is None or row["lat"] == ""):
                 if row["Locality"] is None:         # To handle any exception for operations on 'NoneType'
@@ -194,17 +194,14 @@ class geocoderTest():
     def _addRatingsReviews(self,reviews,row):
         row["rating"],row['author'],row['reviews']="","",""
         for i in range(len(reviews)):
-            try:
-                if i==(len(reviews)-1):
-                    row["rating"]+=str(reviews[i]['rating'])
-                    row['author']+=str(reviews[i]['author_name'])
-                    row['reviews']+=str(reviews[i]['text'])
-                else:
-                    row["rating"]+=str(reviews[i]['rating'])+","
-                    row['author']+=str(reviews[i]['author_name'])+","
-                    row['reviews']+=str(reviews[i]['text'])+","
-            except Exception:
-                print("Just a temporary fix")
+            if i==(len(reviews)-1):
+                row["rating"]+=str(reviews[i]['rating'])
+                row['author']+=reviews[i]['author_name'].encode('utf-8')
+                row['reviews']+=reviews[i]['text'].encode('utf-8')
+            else:
+                row["rating"]+=str(reviews[i]['rating'])+","
+                row['author']+=reviews[i]['author_name'].encode('utf-8')+","
+                row['reviews']+=reviews[i]['text'].encode('utf-8')+","
 
     def _formatWorkinghours(self):
         for row in self.rows:
