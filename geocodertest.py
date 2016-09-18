@@ -15,7 +15,7 @@ from imagesFetch import fetch
 from imagesFetch import correctImage
 
 
-KEYS = [ 
+KEYS = [
         'AIzaSyCgs8C71RqvWoeO69XBXVPQH006i7v4IkM', #Ananth's
         'AIzaSyCcijQW6eCvvt1ToSkjaGA4R22qBdZ0XsI', #Aakash's
         'AIzaSyATi8d86dHYR3U39S9_zg_dWZIFK4c86ko' #Shubhankar's
@@ -71,20 +71,24 @@ class geocoderTest():
         geoLocationFailed = 0;
         for row in self.rows:
             if (row["lat"] is None or row["lat"] == ""):
+                if row["Locality"] is None:         # To handle any exception for operations on 'NoneType'
+                    row["Locality"] = ""
+                if row["City"] is None:
+                    row["City"] = ""
                 row["Locality"] = row["Locality"].title()
                 row["City"] = row["City"].title()
                 address = "%s %s, %s, %s, %s" % (row["Street Address"],row["Locality"],row["City"],row["Pincode"],row["Country"])
-                
+
                 address_prec = "%s, %s" % (row["City"], row["Country"]) #calculating precise location
-                
+
                 row["fullAddress"] = address;
                 row["listing_locations"] = row["Locality"] + ", " + row["City"];
                 geocode_city=self.gmaps.geocode(address_prec) #geocodes for city
                 lat_prec=geocode_city[0]['geometry']['location']['lat']
                 lng_prec=geocode_city[0]['geometry']['location']['lng']
-                
+
                 try:
-                    time.sleep(1); # To prevent error from Google API for concurrent calls              
+                    time.sleep(1); # To prevent error from Google API for concurrent calls
                     geocode_result = self.gmaps.geocode(address);
                     if(len(geocode_result)>0):
                         row["lat"] = geocode_result[0]['geometry']['location']['lat'];
@@ -105,7 +109,7 @@ class geocoderTest():
                 except Exception as err:
                     logging.exception("Something awful happened when processing '"+address+"'");
                     geoLocationFailed+=1;
-        
+
                 if int(math.ceil(abs(float(lat_prec)-float(row["lat"])))) ==1 and int(math.ceil(abs(float(lng_prec)-float(row["lng"])))) ==1:
                     '''
                     for checking precise location by
@@ -140,16 +144,16 @@ class geocoderTest():
                 try:
                     url2='https://maps.googleapis.com/maps/api/place/details/json?placeid='
                     placeid=requests.get(url1).json().get('predictions')[0]['place_id'];
-                    url2=url2+placeid+"&key="+KEYS[key_index]              
+                    url2=url2+placeid+"&key="+KEYS[key_index]
                     #print 'Place id ',row['Name'], url2
-                    
-                    
+
+
 
                     detail_placeid=requests.get(url2).json().get('result')
                     details=detail_placeid['photos']
                     details_reviews=detail_placeid['reviews']
                     #print details_reviews
-                    
+
                     for i in range(len(details)):
                         url3='https://maps.googleapis.com/maps/api/place/photo?maxwidth=1600&photoreference='+details[i]['photo_reference']+'&key='+KEYS[key_index]
 
@@ -162,7 +166,7 @@ class geocoderTest():
                     #new_imgs=correctImage(x) #checking the images for thumbnail
                     #print "New imgs geo",new_imgs
                     row["Images URL"]=str_place+row['Images URL']
-                   
+
                 except Exception:
                     print "Image not found for "+row['Name']
                 if row["prec_loc"]=="true":
@@ -178,7 +182,7 @@ class geocoderTest():
                 #print row['featured_image']
             else:
                 row['featured_image'] = row['Images URL'].split(",")[0].strip();
-    
+
     def _addRatingsReviews(self,reviews,row):
         row["rating"],row['author'],row['reviews']="","",""
         for i in range(len(reviews)):
