@@ -40,16 +40,19 @@ class geocoderTest():
     def process(self):
         fileNames = glob.glob('./input/*.csv');
         print fileNames
+        fileCount = 0
         for fileName in fileNames:
             self.rows = []
             self.FIELDS = []
-            fileBaseName = os.path.splitext(os.path.basename(fileName))[0];
-            self._readCSV(fileName);
-            self._addGeocoding();
-            self._addLocationPhoto();
-            self._addFeaturedImage();
-            self._formatWorkinghours();
+            fileBaseName = os.path.splitext(os.path.basename(fileName))[0]
+            self._readCSV(fileName)
+            self._addGeocoding()
+            self._addLocationPhoto()
+            self._addFeaturedImage()
+            self._formatWorkinghours()
+            fileCount +=1
             self._writeCSV("./output/processed_"+fileBaseName+".csv");
+            print("***Successfully processed "+str(fileCount)+" files.***");
 
     def _readCSV(self, fileName):
         inputFile = open(fileName, 'r')
@@ -69,23 +72,33 @@ class geocoderTest():
     def _addGeocoding(self):
         geoLocationAdded = 0;
         geoLocationFailed = 0;
+        precise_count = 0
+
+        '''
+        Each CSV file will be pertaining to a city.
+        We can save almost half of the calls to geocoder API if we calculate the City cordinates only once. 
+        '''
+        row = self.rows[0]
+        if row["City"] is None:
+            row = self.rows[1] #Highly unlikely that this will also fail        
+        row["City"] = row["City"].title()
+        city = row["City"]
+        print("Processing: " + row["City"])            
+        address_prec = "%s, %s" % (row["City"], row["Country"]) #calculating precise location
+        geocode_city=self.gmaps.geocode(address_prec) #geocodes for city
+        lat_prec=geocode_city[0]['geometry']['location']['lat']
+        lng_prec=geocode_city[0]['geometry']['location']['lng']
+        time.sleep(1); # To prevent error from Google API for concurrent calls
+                
         for row in self.rows:
             if (row["lat"] is None or row["lat"] == ""):
                 if row["Locality"] is None:         # To handle any exception for operations on 'NoneType'
                     row["Locality"] = ""
-                if row["City"] is None:
-                    row["City"] = ""
+                row["City"] = city;
                 row["Locality"] = row["Locality"].title()
-                row["City"] = row["City"].title()
                 address = "%s %s, %s, %s, %s" % (row["Street Address"],row["Locality"],row["City"],row["Pincode"],row["Country"])
-
-                address_prec = "%s, %s" % (row["City"], row["Country"]) #calculating precise location
-
                 row["fullAddress"] = address;
                 row["listing_locations"] = row["Locality"] + ", " + row["City"];
-                geocode_city=self.gmaps.geocode(address_prec) #geocodes for city
-                lat_prec=geocode_city[0]['geometry']['location']['lat']
-                lng_prec=geocode_city[0]['geometry']['location']['lng']
 
                 try:
                     time.sleep(1); # To prevent error from Google API for concurrent calls
@@ -94,14 +107,12 @@ class geocoderTest():
                         row["lat"] = geocode_result[0]['geometry']['location']['lat'];
                         row["lng"] = geocode_result[0]['geometry']['location']['lng'];
                     else:
-                        logging.warning("Geocode API failure for : '" + address + "'");
                         time.sleep(1);
                         geocode_result = self.gmaps.geocode(row["Name"] + ", " + address);
                         if (len(geocode_result) > 0):
                             row["lat"] = geocode_result[0]['geometry']['location']['lat'];
                             row["lng"] = geocode_result[0]['geometry']['location']['lng'];
                         else:
-                            logging.warning("Trying by adding name failed for: '" + address + "'"+"hence taking city geocodes");
                             #geoLocationFailed+=1;
                             row["lat"] = lat_prec;
                             row["lng"] = lng_prec;
@@ -117,16 +128,16 @@ class geocoderTest():
                     and place geocodes
                     '''
                     row["prec_loc"]="true"
+                    precise_count +=1
                 else:
                     row["lat"] = lat_prec;
                     row["lng"] = lng_prec;
 
                 geoLocationAdded+=1;
-                if (geoLocationAdded%20==0):
+                if (geoLocationAdded%50==0):
                     print("Processed "+str(geoLocationAdded)+" rows.");
 
-        time.sleep(1); # To prevent error from Google API for concurrent calls
-        print("Successfully completed processing of (" + str(geoLocationAdded-geoLocationFailed) + "/" + str(geoLocationAdded) + ") rows.");
+        print("Total precise entries: " + str(precise_count) + " out of " + str(geoLocationAdded) );
 
     def _addLocationPhoto(self):
         for row in self.rows:
@@ -147,8 +158,6 @@ class geocoderTest():
                     url2=url2+placeid+"&key="+KEYS[key_index]
                     #print 'Place id ',row['Name'], url2
 
-
-
                     detail_placeid=requests.get(url2).json().get('result')
                     details=detail_placeid['photos']
                     details_reviews=detail_placeid['reviews']
@@ -156,7 +165,6 @@ class geocoderTest():
 
                     for i in range(len(details)):
                         url3='https://maps.googleapis.com/maps/api/place/photo?maxwidth=1600&photoreference='+details[i]['photo_reference']+'&key='+KEYS[key_index]
-
                         t=requests.get(url3)
                         list_pics.append(t.url) #resolving redirects it returns final url
 
@@ -186,14 +194,17 @@ class geocoderTest():
     def _addRatingsReviews(self,reviews,row):
         row["rating"],row['author'],row['reviews']="","",""
         for i in range(len(reviews)):
-            if i==(len(reviews)-1):
-                row["rating"]+=str(reviews[i]['rating'])
-                row['author']+=str(reviews[i]['author_name'])
-                row['reviews']+=str(reviews[i]['text'])
-            else:
-                row["rating"]+=str(reviews[i]['rating'])+","
-                row['author']+=str(reviews[i]['author_name'])+","
-                row['reviews']+=str(reviews[i]['text'])+","
+            try:
+                if i==(len(reviews)-1):
+                    row["rating"]+=str(reviews[i]['rating'])
+                    row['author']+=str(reviews[i]['author_name'])
+                    row['reviews']+=str(reviews[i]['text'])
+                else:
+                    row["rating"]+=str(reviews[i]['rating'])+","
+                    row['author']+=str(reviews[i]['author_name'])+","
+                    row['reviews']+=str(reviews[i]['text'])+","
+            except Exception:
+                print("Just a temporary fix")
 
     def _formatWorkinghours(self):
         for row in self.rows:
