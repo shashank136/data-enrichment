@@ -48,6 +48,7 @@ class geocoderTest():
             self._readCSV(fileName)
             self._addGeocoding()
             self._addLocationPhoto()
+            self._removeThumbs()
             self._addFeaturedImage()
             self._formatWorkinghours()
             fileCount +=1
@@ -180,6 +181,10 @@ class geocoderTest():
                 if row["prec_loc"]=="true":
                     print "Adding rating and reviews"
                     f._addRatingsReviews(details_reviews,row)
+
+    def _removeThumbs(self):
+        for row in self.rows:
+            row["Images URL"] = ",".join(filter(lambda url: not 'businessphoto-t' in url,row["Images URL"].split(",")))
 
     def _addFeaturedImage(self):
         for row in self.rows:
