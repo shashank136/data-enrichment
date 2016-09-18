@@ -11,6 +11,7 @@ import requests
 import bs4
 import re
 import math
+from random import randint
 from imagesFetch import fetch
 from imagesFetch import correctImage
 
@@ -65,7 +66,7 @@ class geocoderTest():
         # next(reader)
         # append new columns
         reader.fieldnames.extend(["listing_locations", "featured_image", "location_image", "fullAddress", "lat", "lng","prec_loc"]);
-        reader.fieldnames.extend(["rating","reviews","author"]);
+        reader.fieldnames.extend(["rating","reviews","author","Total Views"]);
         self.FIELDS = reader.fieldnames;
         self.rows.extend(reader);
         inputFile.close();
@@ -158,7 +159,7 @@ class geocoderTest():
                     placeid=requests.get(url1).json().get('predictions')[0]['place_id'];
                     url2=url2+placeid+"&key="+KEYS[key_index]
                     #print 'Place id ',row['Name'], url2
-
+                    row["Total Views"]=randint(200,500)
                     detail_placeid=requests.get(url2).json().get('result')
                     details=detail_placeid['photos']
                     details_reviews=detail_placeid['reviews']
@@ -178,6 +179,7 @@ class geocoderTest():
 
                 except Exception:
                     print "Image not found for "+row['Name']
+                    row["Total Views"]=randint(50,200)
                 if row["prec_loc"]=="true":
                     print "Adding rating and reviews"
                     f._addRatingsReviews(details_reviews,row)
