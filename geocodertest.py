@@ -49,7 +49,7 @@ class geocoderTest():
             self._readCSV(fileName)
             self._removeThumbs()
             self._addGeocoding()
-            self._addLocationPhoto()            
+            self._addLocationPhoto()
             self._addFeaturedImage()
             self._formatWorkinghours()
             fileCount +=1
@@ -66,7 +66,7 @@ class geocoderTest():
         # next(reader)
         # append new columns
         reader.fieldnames.extend(["listing_locations", "featured_image", "location_image", "fullAddress", "lat", "lng","prec_loc"]);
-        reader.fieldnames.extend(["rating","reviews","author","Total Views"]);
+        reader.fieldnames.extend(["rating","reviews","author","Total Views","avg_rating"]);
         self.FIELDS = reader.fieldnames;
         self.rows.extend(reader);
         inputFile.close();
@@ -163,6 +163,7 @@ class geocoderTest():
                     detail_placeid=requests.get(url2).json().get('result')
                     details=detail_placeid['photos']
                     details_reviews=detail_placeid['reviews']
+                    row['avg_rating'] = detail_placeid['rating']
                     #print details_reviews
 
                     for i in range(len(details)):
@@ -180,12 +181,13 @@ class geocoderTest():
                 except Exception:
                     print "Image not found for "+row['Name']
                     row["Total Views"]=randint(50,200)
+                    row['avg_rating']=3.5
                 if row["prec_loc"]=="true":
                     print "Adding rating and reviews"
                     f._addRatingsReviews(details_reviews,row)
 
     def _removeThumbs(self):
-        for row in self.rows:            
+        for row in self.rows:
             row["Images URL"] = ",".join(filter(lambda url: not 'businessphoto-t' in url,row["Images URL"].split(",")))
 
     def _addFeaturedImage(self):
