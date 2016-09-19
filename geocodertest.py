@@ -13,8 +13,6 @@ import re
 import math
 from random import randint
 from imagesFetch import fetch
-from imagesFetch import correctImage
-
 
 KEYS = [
         'AIzaSyCgs8C71RqvWoeO69XBXVPQH006i7v4IkM', #Ananth's
