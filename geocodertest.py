@@ -160,9 +160,11 @@ class geocoderTest():
                     row["Total Views"]=randint(200,500)
                     detail_placeid=requests.get(url2).json().get('result')
                     details=detail_placeid['photos']
-                    details_reviews=detail_placeid['reviews']
-                    row['avg_rating'] = detail_placeid['rating']
-                    #print details_reviews
+                    try:
+                        details_reviews=detail_placeid['reviews']
+                    except Exception:
+                        # FOR CASES WITH NO REVIEWS BUT THERE MAY BE PHOTOS
+                        pass
 
                     for i in range(len(details)):
                         url3='https://maps.googleapis.com/maps/api/place/photo?maxwidth=1600&photoreference='+details[i]['photo_reference']+'&key='+KEYS[key_index]
@@ -179,10 +181,11 @@ class geocoderTest():
                 except Exception:
                     print "Image not found for "+row['Name']
                     row["Total Views"]=randint(50,200)
-                    row['avg_rating']=3.5
                 if row["prec_loc"]=="true":
                     print "Adding rating and reviews"
                     f._addRatingsReviews(details_reviews,row)
+                else:
+                    row['avg_rating']=3.5
 
     def _removeThumbs(self):
         for row in self.rows:
@@ -200,7 +203,9 @@ class geocoderTest():
 
     def _addRatingsReviews(self,reviews,row):
         row["rating"],row['author'],row['reviews']="","",""
+        total=0
         for i in range(len(reviews)):
+            total += reviews[i]['rating']
             if i==(len(reviews)-1):
                 row["rating"]+=str(reviews[i]['rating'])
                 row['author']+=reviews[i]['author_name'].encode('utf-8')
@@ -209,6 +214,10 @@ class geocoderTest():
                 row["rating"]+=str(reviews[i]['rating'])+","
                 row['author']+=reviews[i]['author_name'].encode('utf-8')+","
                 row['reviews']+=reviews[i]['text'].encode('utf-8')+","
+        if total == 0:
+            row['avg_rating'] = 3.5
+        else:
+            row['avg_rating'] = round((total*1.0)/len(reviews),1)
 
     def _formatWorkinghours(self):
         for row in self.rows:
