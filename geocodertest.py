@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import csv
 import logging
 import glob
@@ -13,6 +14,7 @@ import re
 import math
 from random import randint
 from imagesFetch import fetch
+import parseGWorkHours  #parsing with google place details 
 
 KEYS = [
         'AIzaSyCgs8C71RqvWoeO69XBXVPQH006i7v4IkM', #Ananth's
@@ -64,7 +66,7 @@ class geocoderTest():
         # next(reader)
         # append new columns
         reader.fieldnames.extend(["listing_locations", "featured_image", "location_image", "fullAddress", "lat", "lng","prec_loc"]);
-        reader.fieldnames.extend(["rating","reviews","author","Total Views","avg_rating"]);
+        reader.fieldnames.extend(["rating","reviews","author","Total Views","avg_rating","place_details"]);
         self.FIELDS = reader.fieldnames;
         self.rows.extend(reader);
         inputFile.close();
@@ -142,6 +144,7 @@ class geocoderTest():
     def _addLocationPhoto(self):
         for row in self.rows:
             details_reviews=[]
+            detail_placeid=""
             list_pics=[]
             str_place=""
             if row["lat"]==0:
@@ -151,14 +154,19 @@ class geocoderTest():
                 myLocation = (row["lat"], row["lng"]);
                 #print myLocation
                 url1='https://maps.googleapis.com/maps/api/place/autocomplete/json?input='+row['Name']+'&types=establishment&location='+str(row['lat'])+','+str(row['lng'])+'&radius=50000&key='+KEYS[key_index]
+                
                 #print 'Autocomplete URL',url1
                 try:
                     url2='https://maps.googleapis.com/maps/api/place/details/json?placeid='
                     placeid=requests.get(url1).json().get('predictions')[0]['place_id'];
                     url2=url2+placeid+"&key="+KEYS[key_index]
+                    
                     #print 'Place id ',row['Name'], url2
+                    
                     row["Total Views"]=randint(200,500)
                     detail_placeid=requests.get(url2).json().get('result')
+
+                    row['place_details']=detail_placeid
                     details=detail_placeid['photos']
                     try:
                         details_reviews=detail_placeid['reviews']
@@ -221,10 +229,16 @@ class geocoderTest():
 
     def _formatWorkinghours(self):
         for row in self.rows:
-            if not row["Working Hours"]:
-                row['Working Hours'] = '';
-            else:
+            if row['Working Hours'] is not None:
                 row['Working Hours'] = parseWorkingHours.parseWorkingHours(row['Working Hours']);
+
+            elif row['place_details']['opening_hours']['periods'] is not None:
+                GPlacesWH=row['place_details']['opening_hours']['periods']
+                GWrkHours=parseGWorkHours.parse(GPlacesWH)
+                row['Working Hours']=GWrkHours
+
+            else:
+                row['Working Hours']=''
 
     def _writeCSV(self, fileName):
         try:
