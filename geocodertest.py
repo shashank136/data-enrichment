@@ -49,7 +49,7 @@ class geocoderTest():
         self.FIELDS = []
 
     def process(self):
-        fileNames = glob.glob('./input/*.csv');
+        fileNames = glob.glob('./input/sample.csv');
         print fileNames
         fileCount = 0
         for fileName in fileNames:
@@ -276,16 +276,16 @@ class geocoderTest():
 
     def _formatWorkinghours(self):
         for row in self.rows:
-            if row['Working Hours'] is not None:
+            if row['Working Hours'] is not None and row['Working Hours']!='':
                 row['Working Hours'] = parseWorkingHours.parseWorkingHours(row['Working Hours']);
-
-            elif row['place_details']['opening_hours']['periods'] is not None:
-                GPlacesWH=row['place_details']['opening_hours']['periods']
-                GWrkHours=parseGWorkHours.parse(GPlacesWH)
-                row['Working Hours']=GWrkHours
-
             else:
-                row['Working Hours']=''
+                try:
+                    #if row['place_details'] is not None and row['place_details']['opening_hours']:
+                    GPlacesWH=row['place_details']['opening_hours']['periods']
+                    GWrkHours=parseGWorkHours.parse(GPlacesWH)
+                    row['Working Hours']=GWrkHours
+                except Exception:
+                    row['Working Hours']=''
 
     def _writeCSV(self, fileName):
         try:
