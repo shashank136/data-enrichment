@@ -14,13 +14,18 @@ import re
 import math
 from random import randint
 from imagesFetch import fetch
-import parseGWorkHours  #parsing with google place details 
+import parseGWorkHours  #parsing with google place details
+from facepy import GraphAPI
 
 KEYS = [
         'AIzaSyCgs8C71RqvWoeO69XBXVPQH006i7v4IkM', #Ananth's
         'AIzaSyCcijQW6eCvvt1ToSkjaGA4R22qBdZ0XsI', #Aakash's
         'AIzaSyATi8d86dHYR3U39S9_zg_dWZIFK4c86ko' #Shubhankar's
 ]
+KEYS_FB=[('805684409509002','eac04d6d27b0a8f04040cd95ca3939c1'), # AppID , AppSecret
+          ]
+
+key_index_fb = 0
 key_index = 0
 
 
@@ -34,6 +39,11 @@ class geocoderTest():
             #check for actual error if required set no. of calls = 2500 (or whatever)
             key_index += 1
             self.gmaps = googlemaps.Client(key=KEYS[key_index])
+        try:
+            self.graph=GraphAPI('EAACEdEose0cBAJA9DgBsqrtmWxWSDdSIXM0Uj4C6xt3Gt0aj5FrqZCotBTuPTme1TVayVQduBpXpHxyDDalJ8LZBRMJflwNLZAEAniZBpCqzEticXrdEwUljbVZAMYXAtA7ZBRb01Ss6YLIMkONlCoZBWboXD7w4u16dgnA3YUF3AZDZD')
+        except:
+            key_index_fb= (key_index_fb+1)%len(key_index_fb)
+            self.graph=GraphAPI(GraphAPI().get_app_access_token(*KEYS_FB[key_index_fb]))
 
         self.rows = []
         self.FIELDS = []
@@ -46,12 +56,14 @@ class geocoderTest():
             self.rows = []
             self.FIELDS = []
             fileBaseName = os.path.splitext(os.path.basename(fileName))[0]
-            self._readCSV(fileName)
+            self._readCSV(fileName)            
             self._removeThumbs()
             self._addGeocoding()
+            self._repairFromGraph()
             self._addLocationPhoto()
             self._addFeaturedImage()
             self._formatWorkinghours()
+            self._repairFromGraph()
             fileCount +=1
             self._writeCSV("./output/processed_"+fileBaseName+".csv");
             print("***Successfully processed "+str(fileCount)+" files.***");
@@ -66,7 +78,7 @@ class geocoderTest():
         # next(reader)
         # append new columns
         reader.fieldnames.extend(["listing_locations", "featured_image", "location_image", "fullAddress", "lat", "lng","prec_loc"]);
-        reader.fieldnames.extend(["rating","reviews","author","Total Views","avg_rating","place_details"]);
+        reader.fieldnames.extend(["rating","reviews","author","Total Views","avg_rating","place_details", "Description", "fb_page", "cover_photo"]);
         self.FIELDS = reader.fieldnames;
         self.rows.extend(reader);
         inputFile.close();
@@ -226,6 +238,41 @@ class geocoderTest():
             row['avg_rating'] = 3.5
         else:
             row['avg_rating'] = round((total*1.0)/len(reviews),1)
+            
+    def _repairFromGraph(self):
+        for row in self.rows:
+            try:
+                search_result=self.graph.search(row['Name']+"&center=%s,%s&dictance=10000"%(row['lat'],row['lng']),'place')
+                print row['Name']+"&center=%s,%s&dictance=10000"%(row['lat'],row['lng'])
+                node=dict()
+                for place in search_result['data']:
+                    if row['City'].lower() == place['location']['city'].lower():
+                        node=self.graph.get(place['id'])
+                        break
+                if node:
+                    if 'description' in node:
+                        row['Description'] = node['description']
+                        print "Added description "+node['description'][:40]+" to "+row["Name"]+" from facebook"
+                    if 'link' in node:
+                        row['fb_link']=node['link']
+                        print "Added page "+node['link']+" to "+row["Name"]+" from facebook"
+                    if 'cover' in node:
+                        row['cover_photo'] = node['cover']['source'] #tbd: download it!
+                        print "Added cover "+node['cover']['source']+" to "+row["Name"]+" from facebook"
+                    if not row['Website']:
+                        if 'website' in node:
+                            row['Website'] = node['website']
+                            print "Added website "+node['website']+" to "+row["Name"]+" from facebook"
+                    if not row['Pincode'] and 'zip' in node['location'] :
+                        row['Pincode']=node['location']['zip']
+                        print "Added pin "+node['location']['zip']+" to "+row["Name"]+" from facebook"
+                    if not row['Street Address'] and 'street' in node['location']:
+                        row['Street Address'] = node['location']['street']
+                        print "Added address "+node['location']['street']+" to "+row["Name"]+" from facebook"
+            except:
+               logging.exception("Error loading information from facebook for " + row['Name']);
+                    
+                        
 
     def _formatWorkinghours(self):
         for row in self.rows:
