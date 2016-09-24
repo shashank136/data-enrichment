@@ -22,9 +22,8 @@ KEYS = [
         'AIzaSyCcijQW6eCvvt1ToSkjaGA4R22qBdZ0XsI', #Aakash's
         'AIzaSyATi8d86dHYR3U39S9_zg_dWZIFK4c86ko' #Shubhankar's
 ]
-KEYS_FB=[('805684409509002','eac04d6d27b0a8f04040cd95ca3939c1'), # AppID , AppSecret
-          ]
-
+KEYS_FB=['EAACEdEose0cBANXNSbv1ZBYBeFJJxAlFZCWWDZA9O7GTrsD0k7CPB0892ctwjZA0uARrSWGy7FFIY6yWMToQ2vD1vZCSazkrNF3N4YmPn989FzR1ilqWBXroxq7LbAQhGQlSJH6hLQcmwyO7MhFMxnT85k0L9yLpv9HjO4SxTwQZDZD',
+          ]# Generate new keys at https://developers.facebook.com/tools/explorer?method=GET&version=v2.1
 key_index_fb = 0
 key_index = 0
 
@@ -33,17 +32,17 @@ class geocoderTest():
     def __init__(self, geo_type='google'):
 
         try:
-            global key_index
+            global key_index,key_index_fb
             self.gmaps = googlemaps.Client(key=KEYS[key_index])
         except:
             #check for actual error if required set no. of calls = 2500 (or whatever)
             key_index += 1
             self.gmaps = googlemaps.Client(key=KEYS[key_index])
         try:
-            self.graph=GraphAPI('EAACEdEose0cBAJA9DgBsqrtmWxWSDdSIXM0Uj4C6xt3Gt0aj5FrqZCotBTuPTme1TVayVQduBpXpHxyDDalJ8LZBRMJflwNLZAEAniZBpCqzEticXrdEwUljbVZAMYXAtA7ZBRb01Ss6YLIMkONlCoZBWboXD7w4u16dgnA3YUF3AZDZD')
+            self.graph=GraphAPI(KEYS_FB[key_index_fb])
         except:
-            key_index_fb= (key_index_fb+1)%len(key_index_fb)
-            self.graph=GraphAPI(GraphAPI().get_app_access_token(*KEYS_FB[key_index_fb]))
+            key_index_fb= (key_index_fb+1)%len(KEYS_FB)
+            self.graph=GraphAPI(KEYS_FB[key_index_fb])
 
         self.rows = []
         self.FIELDS = []
@@ -56,14 +55,17 @@ class geocoderTest():
             self.rows = []
             self.FIELDS = []
             fileBaseName = os.path.splitext(os.path.basename(fileName))[0]
-            self._readCSV(fileName)            
+            self._readCSV(fileName)
+            print("Reading CSV...finished")
             self._removeThumbs()
             self._addGeocoding()
-            self._repairFromGraph()
+            print("Added Geocoding")
             self._addLocationPhoto()
             self._addFeaturedImage()
+            print("Added Generated Images")
             self._formatWorkinghours()
             self._repairFromGraph()
+            print("Added Facebook data")
             fileCount +=1
             self._writeCSV("./output/processed_"+fileBaseName+".csv");
             print("***Successfully processed "+str(fileCount)+" files.***");
@@ -135,7 +137,11 @@ class geocoderTest():
                     logging.exception("Something awful happened when processing '"+address+"'");
                     geoLocationFailed+=1;
 
-                if int(math.ceil(abs(float(lat_prec)-float(row["lat"])))) ==1 and int(math.ceil(abs(float(lng_prec)-float(row["lng"])))) ==1:
+                try:
+                    check = int(math.ceil(abs(float(lat_prec)-float(row["lat"])))) ==1 and int(math.ceil(abs(float(lng_prec)-float(row["lng"])))) ==1
+                except:
+                    check = False
+                if check:
                     '''
                     for checking precise location by
                     getting difference in city geocodes
@@ -242,8 +248,8 @@ class geocoderTest():
     def _repairFromGraph(self):
         for row in self.rows:
             try:
-                search_result=self.graph.search(row['Name']+"&center=%s,%s&dictance=10000"%(row['lat'],row['lng']),'place')
-                print row['Name']+"&center=%s,%s&dictance=10000"%(row['lat'],row['lng'])
+                #search_result=self.graph.get("search?q=%s+&center=%s,%s&dictance=10000&type=place"%(row['Name'],row['lat'],row['lng']))
+                search_result=self.graph.search(row['Name'],'place')
                 node=dict()
                 for place in search_result['data']:
                     if row['City'].lower() == place['location']['city'].lower():
@@ -254,7 +260,7 @@ class geocoderTest():
                         row['Description'] = node['description']
                         print "Added description "+node['description'][:40]+" to "+row["Name"]+" from facebook"
                     if 'link' in node:
-                        row['fb_link']=node['link']
+                        row['fb_page']=node['link']
                         print "Added page "+node['link']+" to "+row["Name"]+" from facebook"
                     if 'cover' in node:
                         row['cover_photo'] = node['cover']['source'] #tbd: download it!
