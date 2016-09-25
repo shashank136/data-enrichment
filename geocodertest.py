@@ -48,7 +48,7 @@ class geocoderTest():
         self.FIELDS = []
 
     def process(self):
-        fileNames = glob.glob('./input/sample.csv');
+        fileNames = glob.glob('./input/*.csv');
         print fileNames
         fileCount = 0
         for fileName in fileNames:
