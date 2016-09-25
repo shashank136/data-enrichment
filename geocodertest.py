@@ -257,7 +257,7 @@ class geocoderTest():
                         node=self.graph.get(place['id']+"?fields=location,description,phone,link,cover,website")
                         #profile_pic=self.graph.get(place['id']+"%2Fpicture%3Fheight%3D500%26width%3D500")
                         break
-                print(node)
+                #print(node)
 ##                if 'data' in profile_pic:
 ##                    if 'url' in profile_pic and 'is_silhouette' in profile_pic:
 ##                        if not row['Images URL'] and profile_pic['data']['is_silhouette'] == 'false':
