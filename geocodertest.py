@@ -22,8 +22,9 @@ KEYS = [
         'AIzaSyCcijQW6eCvvt1ToSkjaGA4R22qBdZ0XsI', #Aakash's
         'AIzaSyATi8d86dHYR3U39S9_zg_dWZIFK4c86ko' #Shubhankar's
 ]
-KEYS_FB=['EAACEdEose0cBANXNSbv1ZBYBeFJJxAlFZCWWDZA9O7GTrsD0k7CPB0892ctwjZA0uARrSWGy7FFIY6yWMToQ2vD1vZCSazkrNF3N4YmPn989FzR1ilqWBXroxq7LbAQhGQlSJH6hLQcmwyO7MhFMxnT85k0L9yLpv9HjO4SxTwQZDZD',
-          ]# Generate new keys at https://developers.facebook.com/tools/explorer?method=GET&version=v2.1
+KEYS_FB=['1040517959329660|c7e458dd968fca33d05a18fddbcd86ab',   #Rohit
+         '1697721727215546|a372f9c8b412e8b053094042fc4b42e6',   #Shantanu
+          ]# format is AppID|AppSecret, API version: 2.7
 key_index_fb = 0
 key_index = 0
 
@@ -56,16 +57,12 @@ class geocoderTest():
             self.FIELDS = []
             fileBaseName = os.path.splitext(os.path.basename(fileName))[0]
             self._readCSV(fileName)
-            print("Reading CSV...finished")
             self._removeThumbs()
             self._addGeocoding()
-            print("Added Geocoding")
             self._addLocationPhoto()
-            self._addFeaturedImage()
-            print("Added Generated Images")
-            self._formatWorkinghours()
             self._repairFromGraph()
-            print("Added Facebook data")
+            self._addFeaturedImage()
+            self._formatWorkinghours()
             fileCount +=1
             self._writeCSV("./output/processed_"+fileBaseName+".csv");
             print("***Successfully processed "+str(fileCount)+" files.***");
@@ -80,7 +77,7 @@ class geocoderTest():
         # next(reader)
         # append new columns
         reader.fieldnames.extend(["listing_locations", "featured_image", "location_image", "fullAddress", "lat", "lng","prec_loc"]);
-        reader.fieldnames.extend(["rating","reviews","author","Total Views","avg_rating","place_details", "Description", "fb_page", "cover_photo"]);
+        reader.fieldnames.extend(["rating","reviews","author","Total Views","avg_rating","place_details", "fb_page", "cover_photo"]);
         self.FIELDS = reader.fieldnames;
         self.rows.extend(reader);
         inputFile.close();
@@ -246,37 +243,55 @@ class geocoderTest():
             row['avg_rating'] = round((total*1.0)/len(reviews),1)
             
     def _repairFromGraph(self):
+        details=0;link=0;cover=0;website=0;pincode=0;street=0;dp=0
         for row in self.rows:
             try:
-                #search_result=self.graph.get("search?q=%s+&center=%s,%s&dictance=10000&type=place"%(row['Name'],row['lat'],row['lng']))
-                search_result=self.graph.search(row['Name'],'place')
+                search_result=self.graph.get("search?q=%s&fields=location&type=place"%(row['Name']))
+                #search_result=self.graph.search(row['Name'],'place')
                 node=dict()
+                #profile_pic=dict()
                 for place in search_result['data']:
+                    if not 'location' in place:
+                        continue
                     if row['City'].lower() == place['location']['city'].lower():
-                        node=self.graph.get(place['id'])
+                        node=self.graph.get(place['id']+"?fields=location,description,phone,link,cover,website")
+                        #profile_pic=self.graph.get(place['id']+"%2Fpicture%3Fheight%3D500%26width%3D500")
                         break
+                print(node)
+##                if 'data' in profile_pic:
+##                    if 'url' in profile_pic and 'is_silhouette' in profile_pic:
+##                        if not row['Images URL'] and profile_pic['data']['is_silhouette'] == 'false':
+##                            row['Images URL'] = profile_pic['data']['url']
+##                            dp+=1
                 if node:
-                    if 'description' in node:
-                        row['Description'] = node['description']
-                        print "Added description "+node['description'][:40]+" to "+row["Name"]+" from facebook"
+                    if 'description' in node and not row['Details']:
+                        row['Details'] = node['description']
+                        #print "Added description "+node['description'][:40]+" to "+row["Name"]+" from facebook"
+                        details+=1
                     if 'link' in node:
                         row['fb_page']=node['link']
-                        print "Added page "+node['link']+" to "+row["Name"]+" from facebook"
+                        #print "Added page "+node['link']+" to "+row["Name"]+" from facebook"
+                        link+=1
                     if 'cover' in node:
                         row['cover_photo'] = node['cover']['source'] #tbd: download it!
-                        print "Added cover "+node['cover']['source']+" to "+row["Name"]+" from facebook"
+                        #print "Added cover "+node['cover']['source']+" to "+row["Name"]+" from facebook"
+                        cover+=1
                     if not row['Website']:
                         if 'website' in node:
                             row['Website'] = node['website']
-                            print "Added website "+node['website']+" to "+row["Name"]+" from facebook"
+                            #print "Added website "+node['website']+" to "+row["Name"]+" from facebook"
+                            website+=1
                     if not row['Pincode'] and 'zip' in node['location'] :
                         row['Pincode']=node['location']['zip']
-                        print "Added pin "+node['location']['zip']+" to "+row["Name"]+" from facebook"
+                        #print "Added pin "+node['location']['zip']+" to "+row["Name"]+" from facebook"
+                        pincode+=1
                     if not row['Street Address'] and 'street' in node['location']:
                         row['Street Address'] = node['location']['street']
-                        print "Added address "+node['location']['street']+" to "+row["Name"]+" from facebook"
+                        #print "Added address "+node['location']['street']+" to "+row["Name"]+" from facebook"
+                        street+=1
             except:
                logging.exception("Error loading information from facebook for " + row['Name']);
+        print "New Info Added from Facebook\nDetails:%d Facebook Link:%d Cover:%d \nWebsite:%d Pincode:%d Address:%d Images:%d"%(details,link,cover,website,pincode,street,dp)
                     
                         
 
