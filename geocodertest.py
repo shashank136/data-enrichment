@@ -16,6 +16,7 @@ from random import randint
 from imagesFetch import fetch
 import parseGWorkHours  #parsing with google place details
 from facepy import GraphAPI
+from autoComplete import AutoComplete
 
 KEYS = [
         'AIzaSyCgs8C71RqvWoeO69XBXVPQH006i7v4IkM', #Ananth's
@@ -48,6 +49,7 @@ class geocoderTest():
 
         self.rows = []
         self.FIELDS = []
+        self.autoComp = AutoComplete(key=KEYS[key_index])
 
     def process(self):
         fileNames = glob.glob('./input/*.csv');
@@ -59,6 +61,9 @@ class geocoderTest():
             fileBaseName = os.path.splitext(os.path.basename(fileName))[0]
             self._readCSV(fileName)
             self._removeThumbs()
+
+            self.autoComp.main(self.rows)
+
             self._addGeocoding()
             self._addLocationPhoto()
             self._repairFromGraph()
@@ -79,6 +84,7 @@ class geocoderTest():
         # append new columns
         reader.fieldnames.extend(["listing_locations", "featured_image", "location_image", "fullAddress", "lat", "lng","prec_loc"]);
         reader.fieldnames.extend(["rating","reviews","author","Total Views","avg_rating","place_details", "fb_page", "cover_photo"]);
+        reader.fieldnames.extend(['autocomplete_precise_address','place_id'])
         self.FIELDS = reader.fieldnames;
         self.rows.extend(reader);
         inputFile.close();
@@ -170,15 +176,15 @@ class geocoderTest():
                 myLocation = (row["lat"], row["lng"]);
                 #print myLocation
                 url1='https://maps.googleapis.com/maps/api/place/autocomplete/json?input='+row['Name']+'&types=establishment&location='+str(row['lat'])+','+str(row['lng'])+'&radius=50000&key='+KEYS[key_index]
-                
+
                 #print 'Autocomplete URL',url1
                 try:
                     url2='https://maps.googleapis.com/maps/api/place/details/json?placeid='
                     placeid=requests.get(url1).json().get('predictions')[0]['place_id'];
                     url2=url2+placeid+"&key="+KEYS[key_index]
-                    
+
                     #print 'Place id ',row['Name'], url2
-                    
+
                     row["Total Views"]=randint(200,500)
                     detail_placeid=requests.get(url2).json().get('result')
 
@@ -242,7 +248,7 @@ class geocoderTest():
             row['avg_rating'] = 3.5
         else:
             row['avg_rating'] = round((total*1.0)/len(reviews),1)
-            
+
     def _repairFromGraph(self):
         details=0;link=0;cover=0;website=0;pincode=0;street=0;dp=0
         for row in self.rows:
@@ -293,8 +299,8 @@ class geocoderTest():
             except:
                logging.exception("Error loading information from facebook for " + row['Name']);
         print "New Info Added from Facebook\nDetails:%d Facebook Link:%d Cover:%d \nWebsite:%d Pincode:%d Address:%d Images:%d"%(details,link,cover,website,pincode,street,dp)
-                    
-                        
+
+
 
     def _formatWorkinghours(self):
         for row in self.rows:
