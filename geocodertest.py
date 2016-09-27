@@ -15,19 +15,14 @@ import math
 from random import randint
 from imagesFetch import fetch
 import parseGWorkHours  #parsing with google place details
-from facepy import GraphAPI
 from autoComplete import AutoComplete
-
+from fbGraph import processGraph
 KEYS = [
         'AIzaSyCgs8C71RqvWoeO69XBXVPQH006i7v4IkM', #Ananth's
         'AIzaSyCcijQW6eCvvt1ToSkjaGA4R22qBdZ0XsI', #Aakash's
         'AIzaSyATi8d86dHYR3U39S9_zg_dWZIFK4c86ko', #Shubhankar's
         'AIzaSyBVmpXHCROnVWDWQKSqZwgnGFyRAilvIc4'  #Shashwat's
 ]
-KEYS_FB=['1040517959329660|c7e458dd968fca33d05a18fddbcd86ab',   #Rohit
-         '1697721727215546|a372f9c8b412e8b053094042fc4b42e6',   #Shantanu
-          ]# format is AppID|AppSecret, API version: 2.7
-key_index_fb = 0
 key_index = 0
 
 
@@ -35,21 +30,16 @@ class geocoderTest():
     def __init__(self, geo_type='google'):
 
         try:
-            global key_index,key_index_fb
+            global key_index
             self.gmaps = googlemaps.Client(key=KEYS[key_index])
         except:
             #check for actual error if required set no. of calls = 2500 (or whatever)
             key_index += 1
             self.gmaps = googlemaps.Client(key=KEYS[key_index])
-        try:
-            self.graph=GraphAPI(KEYS_FB[key_index_fb])
-        except:
-            key_index_fb= (key_index_fb+1)%len(KEYS_FB)
-            self.graph=GraphAPI(KEYS_FB[key_index_fb])
-
         self.rows = []
         self.FIELDS = []
         self.autoComp = AutoComplete(key=KEYS)
+        self.fbGraph =  processGraph(key=None)
 
     def process(self):
         fileNames = glob.glob('./input/*.csv');
@@ -61,12 +51,10 @@ class geocoderTest():
             fileBaseName = os.path.splitext(os.path.basename(fileName))[0]
             self._readCSV(fileName)
             self._removeThumbs()
-
             self.autoComp.main(self.rows)
-
             self._addGeocoding()
+            self.fbGraph.processAll(self.rows)
             self._addLocationPhoto()
-            self._repairFromGraph()
             self._addFeaturedImage()
             self._formatWorkinghours()
             fileCount +=1
@@ -83,7 +71,7 @@ class geocoderTest():
         # next(reader)
         # append new columns
         reader.fieldnames.extend(["listing_locations", "featured_image", "location_image", "fullAddress", "lat", "lng","prec_loc"]);
-        reader.fieldnames.extend(["rating","reviews","author","Total Views","avg_rating","place_details", "fb_page", "cover_photo"]);
+        reader.fieldnames.extend(["rating","reviews","author","Total Views","avg_rating","place_details", "fb_page", "fb_verified"]);
         reader.fieldnames.extend(['autocomplete_precise_address','place_id'])
         self.FIELDS = reader.fieldnames;
         self.rows.extend(reader);
@@ -249,59 +237,6 @@ class geocoderTest():
         else:
             row['avg_rating'] = round((total*1.0)/len(reviews),1)
 
-    def _repairFromGraph(self):
-        details=0;link=0;cover=0;website=0;pincode=0;street=0;dp=0
-        for row in self.rows:
-            try:
-                search_result=self.graph.get("search?q=%s&fields=location&type=place"%(row['Name']))
-                #search_result=self.graph.search(row['Name'],'place')
-                node=dict()
-                #profile_pic=dict()
-                for place in search_result['data']:
-                    if not 'location' in place:
-                        continue
-                    if row['City'].lower() == place['location']['city'].lower():
-                        node=self.graph.get(place['id']+"?fields=location,description,phone,link,cover,website")
-                        #profile_pic=self.graph.get(place['id']+"%2Fpicture%3Fheight%3D500%26width%3D500")
-                        break
-                #print(node)
-##                if 'data' in profile_pic:
-##                    if 'url' in profile_pic and 'is_silhouette' in profile_pic:
-##                        if not row['Images URL'] and profile_pic['data']['is_silhouette'] == 'false':
-##                            row['Images URL'] = profile_pic['data']['url']
-##                            dp+=1
-                if node:
-                    if 'description' in node and not row['Details']:
-                        row['Details'] = node['description']
-                        #print "Added description "+node['description'][:40]+" to "+row["Name"]+" from facebook"
-                        details+=1
-                    if 'link' in node:
-                        row['fb_page']=node['link']
-                        #print "Added page "+node['link']+" to "+row["Name"]+" from facebook"
-                        link+=1
-                    if 'cover' in node:
-                        row['cover_photo'] = node['cover']['source'] #tbd: download it!
-                        #print "Added cover "+node['cover']['source']+" to "+row["Name"]+" from facebook"
-                        cover+=1
-                    if not row['Website']:
-                        if 'website' in node:
-                            row['Website'] = node['website']
-                            #print "Added website "+node['website']+" to "+row["Name"]+" from facebook"
-                            website+=1
-                    if not row['Pincode'] and 'zip' in node['location'] :
-                        row['Pincode']=node['location']['zip']
-                        #print "Added pin "+node['location']['zip']+" to "+row["Name"]+" from facebook"
-                        pincode+=1
-                    if not row['Street Address'] and 'street' in node['location']:
-                        row['Street Address'] = node['location']['street']
-                        #print "Added address "+node['location']['street']+" to "+row["Name"]+" from facebook"
-                        street+=1
-            except:
-               logging.exception("Error loading information from facebook for " + row['Name']);
-        print "New Info Added from Facebook\nDetails:%d Facebook Link:%d Cover:%d \nWebsite:%d Pincode:%d Address:%d Images:%d"%(details,link,cover,website,pincode,street,dp)
-
-
-
     def _formatWorkinghours(self):
         for row in self.rows:
             if row['Working Hours'] is not None and row['Working Hours']!='':
@@ -332,3 +267,4 @@ if __name__ == '__main__':
     logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
     f = geocoderTest()
     f.process()
+    

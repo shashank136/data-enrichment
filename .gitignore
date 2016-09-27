@@ -2,3 +2,5 @@ output/images/
 venv
 .idea
 *.pyc
+activate.bat
+
