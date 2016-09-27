@@ -49,7 +49,7 @@ class geocoderTest():
 
         self.rows = []
         self.FIELDS = []
-        self.autoComp = AutoComplete(key=KEYS[key_index])
+        self.autoComp = AutoComplete(key=KEYS)
 
     def process(self):
         fileNames = glob.glob('./input/*.csv');

@@ -5,9 +5,13 @@ import glob
 
 class AutoComplete():
     def __init__(self, key):
-        self.key = key
-        self.autocomplete_flag = ['FIXED', 'MULTIPLE MATCHED', 'NONE MATCHED', 'NO INPUT DATA', 'NO PREDICTION']
+        self.GOOGLE_API_KEYS = key
+        self.key_index=0
+        self.key = self.GOOGLE_API_KEYS[key_index]
+        self.chain_failure = False      # TO DISTINGUISH BETWEEN CONCURRENT CALL FAILURE and QUERY-OVERLIMIT FAILURE
 
+        self.autocomplete_flag = ['FIXED', 'MULTIPLE MATCHED', 'NONE MATCHED', 'NO INPUT DATA', 'NO PREDICTION']
+        # FOR STATE DATA TO BE USED BY AUTOCOMPLETE
         self.state_data_rows = []
         file_name = glob.glob('./state_data/city_state.csv')
         state_file = open(file_name[0],'r')
@@ -16,6 +20,8 @@ class AutoComplete():
         state_file.close()
 
         self.rows = []
+        # GLOBAL JSON DICTIONARY TO BE USED BY ALL FUNCTION RATHER THAN MAKING  DIRECT API CALLS
+        self.json_objects = dict()
 
     def get_state(self,city):
         state = ''
@@ -33,22 +39,122 @@ class AutoComplete():
             return state
 
     def graceful_request(self,url):
-        resp = requests.get(url).json()
         while True:
+            resp = requests.get(url+self.GOOGLE_API_KEYS[self.key_index]).json()
             if resp['status'] == 'OK':
                 break
             if resp['status'] == 'ZERO_RESULTS':
                 break
-            resp = requests.get(url)
             print 'ERROR - RESENDING REQUEST'
+
+            # TO DISTINGUISH BETWEEN SINGLE AND MULTIPLE FAILURES
+            if self.chain_failure:
+                print 'CHANGING KEYS'
+                self.key_index = (self.key_index+1)%len(self.GOOGLE_API_KEYS)
+                self.chain_failure = False
+            else:
+                self.chain_failure = True
+
+        self.chain_failure = False
         return resp
+
+    # REQUIRES COUNTRY CODE TO START WITH +, IF PRESENT
+    def parser(self, x):
+        flag_add = False
+        numerals = ['0','1','2','3','4','5','6','7','8','9']
+        allowed_start_symbols = numerals + ['+']
+
+        ############
+        #INITIAL CLEANUP
+        x = x.strip()
+        idx=0
+        for _ in x:
+            if _ in allowed_start_symbols:
+                break
+            idx += 1
+        x = x[idx:]
+        #############
+
+        if x.find('+91') == 0:
+            flag_add = True
+
+        word = ''
+        phone_number = []
+
+        if flag_add:
+            word = list(x[3:])
+        else:
+            word = list(x)
+
+        non_zero_encountered = False
+        for letter in word:
+            # REMOVES 0 FROM START OF NUMBERS
+            if not non_zero_encountered:
+                if letter in numerals[1:]:
+                    non_zero_encountered = True
+
+            if non_zero_encountered:
+                if letter in numerals:
+                    phone_number.append(letter)
+        return ''.join(phone_number)
+
+    def no_prediction_cases(self, row, address):
+        extract = lambda x:'' if x is None else x
+        phones = []
+        if row['Phone1'] != '' and row['Phone1'] is not None:
+            phones.append(row['Phone1'])
+        if row['Phone2'] != '' and row['Phone2'] is not None:
+            phones.append(row['Phone2'])
+        if row['Phone3'] != '' and row['Phone3'] is not None:
+            phones.append(row['Phone3'])
+        if row['Phone4'] != '' and row['Phone4'] is not None:
+            phones.append(row['Phone4'])
+        if row['Phone5'] != '' and row['Phone5'] is not None:
+            phones.append(row['Phone5'])
+
+        url = 'https://maps.googleapis.com/maps/api/place/autocomplete/json?input='+address+'&types=establishment&location=0,0&radius=20000000&components=country:IN&key='
+        resp = self.graceful_request(url)
+        if len(resp["predictions"]) == 1:
+            print '\t-->','  ',resp["predictions"][0]["description"]
+            return True, resp["predictions"][0]['place_id']
+
+        elif len(resp["predictions"]) > 1:
+            print '\tMATCHING PHONE NUMBERS'
+            print '\t|| ORIGINAL : ',phones
+            for x in resp["predictions"]:
+                place_id = x['place_id']
+                url='https://maps.googleapis.com/maps/api/place/details/json?placeid='+place_id+'&key='
+                resp_x = self.graceful_request(url).get('result')
+                # THIS GUARANTEES THE COUNTRY CODE TO START WITH +
+                international_number = self.parser(extract(resp_x.get('international_phone_number')))
+                print '\t||   > NEW : ',international_number
+                for phone in phones:
+                    if self.parser(phone) == international_number:
+                        print '\t|| PHONE NUMBERS MATCHED'
+                        print '\t-->','  ',x["description"]
+                        return True, place_id
+
+            print '\t|| NO PHONE MATCHED'
+            return False,''
+        else:
+            return False,''
+
+    def update_json_object(self, place_id):
+        url='https://maps.googleapis.com/maps/api/place/details/json?placeid='+place_id+'&key='
+        resp_x = self.graceful_request(url).get('result')
+        self.json_objects[place_id]=resp_x
 
     def main(self, rows_data):
         self.rows = rows_data
 
         self._autoComplete()
         self._updateAddress()
-        #sys.exit()
+
+
+        # Dictionary self.json_objects is large
+        # This should be released before the next file is opened as the current object won't go out of scope.
+        # So _releaseMemory() should be the last function to run. Place other functions before this.
+        self._releaseMemory()
 
     def _autoComplete(self):
         fixed_count = 0
@@ -72,17 +178,13 @@ class AutoComplete():
                 print row_idx,'\t',self.autocomplete_flag[3]
             else:
                 address = row['Name'] + ', ' + row['Locality']
-                #address = row['Name'] + row['Street Address']
 
             if valid:
-                #url = 'https://maps.googleapis.com/maps/api/place/autocomplete/json?input='+address+'&types=establishment&location=0,0&radius=20000000&key='+key
-                url = 'https://maps.googleapis.com/maps/api/place/autocomplete/json?input='+address+'&types=establishment&location=0,0&radius=20000000&components=country:IN&key='+self.key
+                url = 'https://maps.googleapis.com/maps/api/place/autocomplete/json?input='+address+'&types=establishment&location=0,0&radius=20000000&components=country:IN&key='
                 resp = self.graceful_request(url)
 
                 correct_prediction = ''
                 if len(resp["predictions"]) > 0:
-                    #print json.dumps(resp,indent=4)
-                    #sys.exit()
                     print row_idx,
                     found = False
                     multiple_match = False
@@ -96,11 +198,10 @@ class AutoComplete():
                                 else:
                                     multiple_match = True
 
-                    print '\t'*5,'RESULT : ',
-
+                    print '\tRES: ',
                     if multiple_match == True:
                         address = row['Name'] + ', ' + row['Locality'] + row['City']
-                        url = 'https://maps.googleapis.com/maps/api/place/autocomplete/json?input='+address+'&types=establishment&location=0,0&radius=20000000&components=country:IN&key='+self.key
+                        url = 'https://maps.googleapis.com/maps/api/place/autocomplete/json?input='+address+'&types=establishment&location=0,0&radius=20000000&components=country:IN&key='
                         resp = self.graceful_request(url)
 
                         if len(resp["predictions"]) == 1:
@@ -110,7 +211,9 @@ class AutoComplete():
                     if found and not multiple_match:
                         fixed_count += 1
                         print self.autocomplete_flag[0]
-                        row['place_id'] = correct_prediction['place_id']
+                        place_id = correct_prediction['place_id']
+                        row['place_id'] = place_id
+                        self.update_json_object(place_id)
 
                     elif multiple_match:
                         multiple_matched_count += 1
@@ -120,8 +223,25 @@ class AutoComplete():
                         none_matched_count += 1
                         print self.autocomplete_flag[2]
                 else:
-                    no_prediction_count += 1
-                    print row_idx,'\t',self.autocomplete_flag[4]
+                    flag = False
+                    place_id = ''
+
+                    print row_idx,
+                    address = row['Name'] + ', ' + row['Pincode']
+                    flag, place_id =  self.no_prediction_cases(row,address)
+                    if flag == False:
+                        address = row['Name'] + ', ' + row['City']
+                        flag, place_id =  self.no_prediction_cases(row,address)
+
+                    if flag == False:
+                        no_prediction_count += 1
+                        print '\t',self.autocomplete_flag[4]
+                    else:
+                        print '\tRES: ',
+                        fixed_count += 1
+                        print self.autocomplete_flag[0]
+                        row['place_id'] = place_id
+                        self.update_json_object(place_id)
 
             row_idx += 1
         print '####################'
@@ -136,11 +256,12 @@ class AutoComplete():
         print 'UPDAING ADDRESS'
         row_idx = 2
         for row in self.rows:
-            #print row_idx,'\t',row['place_id']
             if row['place_id'] is not None and row['place_id'] != '':
-                url='https://maps.googleapis.com/maps/api/place/details/json?placeid='+row['place_id']+'&key='+self.key
-                resp = self.graceful_request(url).get('result')
+                resp = self.json_objects[row['place_id']]
                 row['autocomplete_precise_address'] = resp['formatted_address']
                 print 'ADDRESS UPDATED FOR ROW : ',row_idx
             row_idx += 1
         print '\n'
+
+    def _releaseMemory(self):
+        self.json_objects.clear()
