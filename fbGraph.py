@@ -102,7 +102,7 @@ class processGraph:
         if 'data' in profile_pic:
             if 'url' in profile_pic['data'] and 'is_silhouette' in profile_pic['data']:
                 if not profile_pic['data']['is_silhouette']:
-                    row['Images URL'] += ","+profile_pic['data']['url']
+                    row['Images URL'] += profile_pic['data']['url']+","
                     return 1
         return 0
     def processSelective(self,rows,selection):
