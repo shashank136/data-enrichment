@@ -7,7 +7,7 @@ class AutoComplete():
     def __init__(self, key):
         self.GOOGLE_API_KEYS = key
         self.key_index=0
-        self.key = self.GOOGLE_API_KEYS[key_index]
+        self.key = self.GOOGLE_API_KEYS[self.key_index]
         self.chain_failure = False      # TO DISTINGUISH BETWEEN CONCURRENT CALL FAILURE and QUERY-OVERLIMIT FAILURE
 
         self.autocomplete_flag = ['FIXED', 'MULTIPLE MATCHED', 'NONE MATCHED', 'NO INPUT DATA', 'NO PREDICTION']
