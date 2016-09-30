@@ -24,12 +24,7 @@ KEYS = [
         'AIzaSyATi8d86dHYR3U39S9_zg_dWZIFK4c86ko', #Shubhankar's
         'AIzaSyBVmpXHCROnVWDWQKSqZwgnGFyRAilvIc4'  #Shashwat's
 ]
-KEYS_FB=['1040517959329660|c7e458dd968fca33d05a18fddbcd86ab',   #Rohit
-         '1697721727215546|a372f9c8b412e8b053094042fc4b42e6',   #Shantanu
-          ]# format is AppID|AppSecret, API version: 2.7
-key_index_fb = 0
-key_index = 0
-
+key_index = 0           
 
 class geocoderTest():
     def __init__(self, geo_type='google'):
@@ -54,7 +49,7 @@ class geocoderTest():
             self.rows = []
             self.FIELDS = []
             fileBaseName = os.path.splitext(os.path.basename(fileName))[0]
-            self._readCSV(fileName)
+            self._readCSV(fileName)            
             self._removeThumbs()
 
             self.autoComp.main(self.rows)
@@ -180,9 +175,33 @@ class geocoderTest():
             else:
                 row['featured_image'] = row['Images URL'].split(",")[0].strip();
 
+    def _titleCase(self):
+        separators=[' ',',','.','/','-']
+        count = 0
+        for row in self.rows:
+            for key in ['Street Address', 'Locality', 'City', 'Country', 'listing_locations']:
+                if key in row:
+                    data = row[key]
+                separate=True
+                new=[]
+                if not data:
+                    continue
+                for i in data:
+                    if i in separators:
+                        separate = True
+                    elif separate:
+                        new.append(i.upper())
+                        separate = False
+                        continue
+                    new.append(i)
+                row[key] = ''.join(new)
+                if data!=row[key]:
+                    count+=1
+
     def _writeCSV(self, fileName):
         print "Writing to CSV..."
         try:
+            self._titleCase()
             # DictWriter
             csvFile = open(fileName, 'w');
             writer = csv.DictWriter(csvFile, fieldnames=self.FIELDS);
