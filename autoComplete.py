@@ -4,6 +4,8 @@ import csv
 import sys
 import glob
 from random import randint
+import parseGWorkHours  #parsing with google place details
+import parseWorkingHours
 class AutoComplete():
     def __init__(self, key):
         self.GOOGLE_API_KEYS = key
@@ -154,6 +156,7 @@ class AutoComplete():
         self._addLocationPhoto()
         self._addRatingsReviews()
         self._googleUpdates()
+        self._formatWorkinghours()
         # Dictionary self.json_objects is large
         # This should be released before the next file is opened as the current object won't go out of scope.
         # So _releaseMemory() should be the last function to run. Place other functions before this.
@@ -267,14 +270,17 @@ class AutoComplete():
         print '\n'
 
     def _addLocationPhoto(self):
+        no_place_id=0
+        progress=0
         print 'Adding photos'
         for row in self.rows:
+            progress+=1
             details_reviews=[]
             detail_placeid=""
             list_pics=[]
             str_place=""
-
             if row['place_id'] is not None and row['place_id']!='':
+                no_place_id+=1
                 resp=self.json_objects[row['place_id']]
                 try:
                     photos=resp['photos']
@@ -290,6 +296,9 @@ class AutoComplete():
                     row['Total Views']=randint(50,200)
             else:
                 row['Total Views']=randint(50,200)
+
+            #sys.stdout.write("\r%d%%" % (progress/len(self.json_objects))*100)
+        print "No of place id for "+str(no_place_id)
 
     def _addRatingsReviews(self):
         for row in self.rows:
@@ -308,7 +317,7 @@ class AutoComplete():
                         else:
                             row["rating"]+=str(reviews[i]['rating'])+","
                             row['author']+=reviews[i]['author_name'].encode('utf-8')+","
-                            row['reviews']+=reviews[i]['text'].encode('utf-8')+","
+                            row['reviews']+=reviews[i]['text'].encode('utf-8').replace(",","&#44;")+","
                     if total==0:
                         row['avg_rating']=3.5
                     else:
@@ -320,22 +329,53 @@ class AutoComplete():
                 row['avg_rating']=3.5
 
     def _googleUpdates(self):
+        no_vprt=0
         for row in self.rows:
             if row['place_id'] is not None and row['place_id']!='':
                 resp=self.json_objects[row['place_id']]
+                try:
+                    if resp['permanently_closed']:
+                        row['perma_closed']='true'
+                        print "Permanently closed is ",row['Name']
+                except:
+                    pass
+                try:
+                    view=resp['geometry']['viewport']
+                    no_vprt+=1
+                except:
+                    pass
                 add_comp=resp['address_components']
                 for i in (add_comp):
                     if 'sublocality_level_1' in i['types']:
-                        row['Locality']=i['long_name']
+                        row['Locality']=i['long_name'].title()
                     if 'locality' in i['types']:
-                        row['City']=i['long_name']
+                        row['City']=i['long_name'].title()
                     if 'postal_code' in i['types']:
                         row['Pincode']=i['long_name']
                 row['fullAddress']=resp['formatted_address']
                 row['lat']=resp['geometry']['location']['lat']
                 #print 'Lat',row['lat']
                 row['lng']=resp['geometry']['location']['lng']
-                #print "lng"=row['lng']
+                if row['Website'] is None or row['Website']=='':
+                    try:
+                        website=resp['website']
+                        row['Website']=website
+                    except Exception:
+                        pass
+        print 'viewports for ',no_vprt
+    def _formatWorkinghours(self):
+        for row in self.rows:
+            if row['Working Hours'] is not None and row['Working Hours']!='':
+                row['Working Hours'] = parseWorkingHours.parseWorkingHours(row['Working Hours']);
+            else:
+                try:
+                    #if row['place_details'] is not None and row['place_details']['opening_hours']:
+                    resp=self.json_objects[row['place_id']]
+                    GPlacesWH=resp['opening_hours']['periods']
+                    GWrkHours=parseGWorkHours.parse(GPlacesWH)
+                    row['Working Hours']=GWrkHours
+                except Exception:
+                    row['Working Hours']=''
 
     def _releaseMemory(self):
         self.json_objects.clear()
