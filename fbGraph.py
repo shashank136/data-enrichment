@@ -29,15 +29,15 @@ class processGraph:
 
     def searchPlace(self,row):
         name,city,pin=row['Name'],row['City'].lower(),row['Pincode']
-        city=city.lower()
-        search_result=self.graph.get("search?q=%s&fields=location&type=place&limit=10"%(name))
+        city=unicode(city.lower())
+        search_result=self.graph.get("search?q=%s&fields=location&type=place&limit=50"%(name))
         probable = None
         for place in search_result['data']:
             if not 'location' in place:
                 continue
-            if unicode(pin) == unicode(place['location']['zip']):
+            if unicode(pin) == unicode(place['location']['zip'])  and unicode(pin):
                 return self.graph.get(place['id']+"?fields=location,is_verified,description,phone,link,cover,website")
-            if city == place['location']['city'].lower():
+            if city == unicode(place['location']['city'].lower()) and not probable:
                 probable = place['id']            
         if probable:
             return self.graph.get(probable+"?fields=location,description,is_verified,phone,link,cover,website")
@@ -95,6 +95,29 @@ class processGraph:
                 #print "Added cover "+node['cover']['source']+" to "+row["Name"]+" from facebook"
                 return 1
             return 0
+    def _addEmails(self,row,node):
+        if 'emails' in node:
+            p=2
+            for i in node['emails']:
+                if i != row['Mail']:
+                    row['Mail'+str(p)] = i
+                    #print "Added mail "+i+" to "+'Mail'+str(p)+" from facebook"
+                    p+=1
+            return p-2
+        return 0
+    def _addPhone(self,row,node):
+        if 'phone' in node:
+            ph = str(node['phone']).split(',')
+            for i in range(1,6):
+                if not row['Phone'+str(i)]:
+                    break
+            for j,p in zip(range(i+1,6),ph):                
+                row['Phone'+str(j)] = p.strip()
+                #print "Added phone "+p.strip()+" in "+'Phone'+str(j)+" from facebook"+str(node['location'])
+            return 1
+        return 0
+    
+        
                 
     def _addPicture(self,row,node):
         if not 'id' in node:
@@ -116,6 +139,8 @@ class processGraph:
                 _addPage
                 _addCover
                 _addPicture
+                _addPhone
+                _addEmail
         e.g.
         >>> Graph = processGraph()
         >>> Graph.processSelective(CSV_Dictionary,'_repairDetails')
@@ -132,7 +157,7 @@ class processGraph:
         print "New Info Added from Facebook\n%s:%d"%(stat)
     
     def processAll(self,rows):
-        details,link,cover,website,pincode,street,dp,verified=0,0,0,0,0,0,0,0 #stats
+        details,link,cover,website,pincode,street,dp,verified,phone,email=0,0,0,0,0,0,0,0,0,0 #stats
         for row in rows:
             try:
                 node = self.searchPlace(row)
@@ -143,9 +168,11 @@ class processGraph:
                 link += self._addPage(row,node)
                 cover += self._addCover(row,node)
                 dp += self._addPicture(row,node)
+                phone += self._addPhone(row,node)
+                email += self._addEmails(row,node)
                 verified += self._isVerified(row,node)
             except:
                logging.exception("Error loading information from facebook for " + row['Name'])
-        print "New Info Added from Facebook\nDetails:%d Facebook Link:%d Cover:%d \nWebsite:%d Pincode:%d Address:%d Images:%d Verified %d/%d"%(details,link,cover,website,pincode,street,dp,verified,link)
+        print "New Info Added from Facebook\nDetails:%d Facebook Link:%d Cover:%d \nWebsite:%d Pincode:%d Address:%d Images:%d Verified %d/%d Phone:%d Emails:%d"%(details,link,cover,website,pincode,street,dp,verified,link,phone,email)
 
 
