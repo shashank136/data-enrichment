@@ -97,13 +97,17 @@ class processGraph:
             return 0
     def _addEmails(self,row,node):
         if 'emails' in node:
-            p=2
-            for i in node['emails']:
-                if i != row['Mail']:
-                    row['Mail'+str(p)] = i
-                    #print "Added mail "+i+" to "+'Mail'+str(p)+" from facebook"
-                    p+=1
-            return p-2
+##            p=2
+##            for i in node['emails']:
+##                if i != row['Mail']:
+##                    row['Mail'+str(p)] = i
+##                    #print "Added mail "+i+" to "+'Mail'+str(p)+" from facebook"
+##                    p+=1
+##            return p-2
+            if node['emails'][0] != row['Mail']:
+                row['Mail2'] = node['emails'][0]
+                #print "Added mail "+node['emails'][0]
+                return 1
         return 0
     def _addPhone(self,row,node):
         if 'phone' in node:

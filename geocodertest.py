@@ -49,7 +49,7 @@ class geocoderTest():
             self.rows = []
             self.FIELDS = []
             fileBaseName = os.path.splitext(os.path.basename(fileName))[0]
-            self._readCSV(fileName)            
+            self._readCSV(fileName)
             self._removeThumbs()
 
             self.autoComp.main(self.rows)
