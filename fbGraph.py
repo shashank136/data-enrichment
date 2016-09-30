@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from facepy import GraphAPI
 import logging
 
@@ -34,7 +35,7 @@ class processGraph:
         for place in search_result['data']:
             if not 'location' in place:
                 continue
-            if pin == str(place['location']['zip']):
+            if unicode(pin) == unicode(place['location']['zip']):
                 return self.graph.get(place['id']+"?fields=location,is_verified,description,phone,link,cover,website")
             if city == place['location']['city'].lower():
                 probable = place['id']            
@@ -146,4 +147,5 @@ class processGraph:
             except:
                logging.exception("Error loading information from facebook for " + row['Name'])
         print "New Info Added from Facebook\nDetails:%d Facebook Link:%d Cover:%d \nWebsite:%d Pincode:%d Address:%d Images:%d Verified %d/%d"%(details,link,cover,website,pincode,street,dp,verified,link)
+
 
