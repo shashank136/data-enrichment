@@ -23,5 +23,6 @@ def fetch(s):
 		os.mkdir("./output/images")
 	except Exception:
 		pass
-	base.save("./output/images/"+s.replace("/","")+".png")
-	return "static.careerbreeder.com/output/images/"+s+".png"
+	base.save("./output/images/"+s.replace("/","").replace(" ","")+".png")
+	return "http://static.careerbreeder.com/output/images/"+(s).replace("/","").replace(" ","")+".png"
+
