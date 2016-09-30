@@ -5,7 +5,6 @@ import glob
 import os
 import time
 import googlemaps
-
 from slugify import slugify
 import urllib
 import requests
@@ -48,7 +47,7 @@ class geocoderTest():
         self.fbGraph =  processGraph(key=None)
 
     def process(self):
-        fileNames = glob.glob('./input/sample.csv');
+        fileNames = glob.glob('./input/sample_big.csv');
         print fileNames
         fileCount = 0
         for fileName in fileNames:
@@ -88,7 +87,7 @@ class geocoderTest():
         geoLocationAdded = 0;
         geoLocationFailed = 0;
         precise_count = 0
-
+        print 'ADDING GEOCODES...'
         '''
         Each CSV file will be pertaining to a city.
         We can save almost half of the calls to geocoder API if we calculate the City cordinates only once.
@@ -100,8 +99,9 @@ class geocoderTest():
                 #if row["City"] is None:
                 #    row = self.rows[1]#Highly unlikely that this will also fail
                 #row["City"] = row["City"].title()
-                city = row["City"]
-                print("Processing: " + row["City"])
+                city = row["City"].title()
+                row["City"]=city
+                # print("Processing: " + row["City"])
                 address_prec = "%s, %s" % (row["City"], row["Country"]) #calculating precise location
                 geocode_city=self.gmaps.geocode(address_prec) #geocodes for city
                 lat_prec=geocode_city[0]['geometry']['location']['lat']
@@ -115,7 +115,7 @@ class geocoderTest():
                 row["Locality"] = row["Locality"].title()
                 address = "%s %s, %s, %s, %s" % (row["Street Address"],row["Locality"],row["City"],row["Pincode"],row["Country"])
                 #if row['fullAddress'] is 'None' or row['fullAddress']=='':
-                row["fullAddress"] = address;
+                row["fullAddress"] = address.title();
                 row["listing_locations"] = row["Locality"] + ", " + row["City"];
 
                 try:
@@ -181,6 +181,7 @@ class geocoderTest():
                 row['featured_image'] = row['Images URL'].split(",")[0].strip();
 
     def _writeCSV(self, fileName):
+        print "Writing to CSV..."
         try:
             # DictWriter
             csvFile = open(fileName, 'w');
