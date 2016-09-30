@@ -5,7 +5,7 @@ import glob
 import os
 import time
 import googlemaps
-import parseWorkingHours
+
 from slugify import slugify
 import urllib
 import requests
@@ -14,7 +14,7 @@ import re
 import math
 from random import randint
 from imagesFetch import fetch
-import parseGWorkHours  #parsing with google place details
+
 from facepy import GraphAPI
 from autoComplete import AutoComplete
 from fbGraph import processGraph
@@ -48,7 +48,7 @@ class geocoderTest():
         self.fbGraph =  processGraph(key=None)
 
     def process(self):
-        fileNames = glob.glob('./input/*.csv');
+        fileNames = glob.glob('./input/sample.csv');
         print fileNames
         fileCount = 0
         for fileName in fileNames:
@@ -63,7 +63,7 @@ class geocoderTest():
             self._addGeocoding()
             self.fbGraph.processAll(self.rows)
             self._addFeaturedImage()
-            self._formatWorkinghours()
+            #self._formatWorkinghours()
             fileCount +=1
             self._writeCSV("./output/processed_"+fileBaseName+".csv");
             print("***Successfully processed "+str(fileCount)+" files.***");
@@ -79,7 +79,7 @@ class geocoderTest():
         # append new columns
         reader.fieldnames.extend(["listing_locations", "featured_image", "location_image", "fullAddress", "lat", "lng","prec_loc"]);
         reader.fieldnames.extend(["rating","reviews","author","Total Views","avg_rating","place_details", "fb_page", "fb_verified"]);
-        reader.fieldnames.extend(['autocomplete_precise_address','place_id'])
+        reader.fieldnames.extend(['autocomplete_precise_address','place_id','perma_closed'])
         self.FIELDS = reader.fieldnames;
         self.rows.extend(reader);
         inputFile.close();
@@ -106,7 +106,7 @@ class geocoderTest():
                 geocode_city=self.gmaps.geocode(address_prec) #geocodes for city
                 lat_prec=geocode_city[0]['geometry']['location']['lat']
                 lng_prec=geocode_city[0]['geometry']['location']['lng']
-                print 'lat,lng ',lat_prec,lng_prec
+                #print 'lat,lng ',lat_prec,lng_prec
                 time.sleep(1); # To prevent error from Google API for concurrent calls
 
                 if row["Locality"] is None:         # To handle any exception for operations on 'NoneType'
@@ -179,19 +179,6 @@ class geocoderTest():
                 #print row['featured_image']
             else:
                 row['featured_image'] = row['Images URL'].split(",")[0].strip();
-    
-    def _formatWorkinghours(self):
-        for row in self.rows:
-            if row['Working Hours'] is not None and row['Working Hours']!='':
-                row['Working Hours'] = parseWorkingHours.parseWorkingHours(row['Working Hours']);
-            else:
-                try:
-                    #if row['place_details'] is not None and row['place_details']['opening_hours']:
-                    GPlacesWH=row['place_details']['opening_hours']['periods']
-                    GWrkHours=parseGWorkHours.parse(GPlacesWH)
-                    row['Working Hours']=GWrkHours
-                except Exception:
-                    row['Working Hours']=''
 
     def _writeCSV(self, fileName):
         try:
