@@ -8,6 +8,9 @@ KEYS_FB=['1040517959329660|c7e458dd968fca33d05a18fddbcd86ab',   #Rohit
 
 key_index = 0
 
+def UTF8(data):
+    return data.encode('utf-8','ignore')
+
 class processGraph:
     def __init__(self, key=None):
         global key_index
@@ -45,7 +48,7 @@ class processGraph:
                             
     def _repairDetails(self,row,node):
         if 'description' in node and not row['Details']:
-            row['Details'] = node['description']
+            row['Details'] = UTF8(node['description'])
             #print "Added description "+node['description'][:40]+" to "+row["Name"]+" from facebook"
             return 1
         return 0
@@ -53,7 +56,7 @@ class processGraph:
     def _repairWebsite(self,row,node):
         if not row['Website']:
             if 'website' in node:
-                row['Website'] = node['website']
+                row['Website'] = UTF8(node['website'])
                 #print "Added website "+node['website']+" to "+row["Name"]+" from facebook"
                 return 1
         return 0    
@@ -61,7 +64,7 @@ class processGraph:
     def _repairPin(self,row,node):
         if 'location' in node:
             if not row['Pincode'] and 'zip' in node['location'] :
-                row['Pincode'] = node['location']['zip']
+                row['Pincode'] = UTF8(node['location']['zip'])
                 #print "Added pin "+node['location']['zip']+" to "+row["Name"]+" from facebook"
                 return 1
         return 0
@@ -69,14 +72,14 @@ class processGraph:
     def _repairStreet(self,row,node):
         if 'location' in node:
             if not row['Street Address'] and 'street' in node['location']:
-                row['Street Address'] = node['location']['street']
+                row['Street Address'] = UTF8(node['location']['street'])
                 #print "Added address "+node['location']['street']+" to "+row["Name"]+" from facebook"
                 return 1
         return 0    
                 
     def _addPage(self,row,node):
         if 'link' in node:
-            row['fb_page']=node['link']
+            row['fb_page']=UTF8(node['link'])
             #print "Added page "+node['link']+" to "+row["Name"]+" from facebook"
             return 1
         return 0
@@ -91,7 +94,7 @@ class processGraph:
                 
     def _addCover(self,row,node):                
             if 'cover' in node:
-                row['Images URL'] = node['cover']['source']+","+row['Images URL']
+                row['Images URL'] = UTF8(node['cover']['source'])+","+row['Images URL']
                 #print "Added cover "+node['cover']['source']+" to "+row["Name"]+" from facebook"
                 return 1
             return 0
@@ -104,14 +107,15 @@ class processGraph:
 ##                    #print "Added mail "+i+" to "+'Mail'+str(p)+" from facebook"
 ##                    p+=1
 ##            return p-2
-            if node['emails'][0] != row['Mail']:
-                row['Mail2'] = node['emails'][0]
+            email2 = UTF8(node['emails'][0])
+            if email2 != row['Mail']:
+                row['Mail2'] = email2
                 #print "Added mail "+node['emails'][0]
                 return 1
         return 0
     def _addPhone(self,row,node):
         if 'phone' in node:
-            ph = str(node['phone']).split(',')
+            ph = map(UTF8,str(node['phone']).split(','))
             for i in range(1,6):
                 if not row['Phone'+str(i)]:
                     break
