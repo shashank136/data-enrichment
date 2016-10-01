@@ -19,12 +19,17 @@ from autoComplete import AutoComplete
 from fbGraph import processGraph
 
 KEYS = [
+        'AIzaSyCp4DIN0mzmvQxcq0IOMtu48ZmFwr3qyj8', #Rohit
         'AIzaSyCgs8C71RqvWoeO69XBXVPQH006i7v4IkM', #Ananth's
         'AIzaSyCcijQW6eCvvt1ToSkjaGA4R22qBdZ0XsI', #Aakash's
         'AIzaSyATi8d86dHYR3U39S9_zg_dWZIFK4c86ko', #Shubhankar's
-        'AIzaSyBVmpXHCROnVWDWQKSqZwgnGFyRAilvIc4'  #Shashwat's
+        'AIzaSyBVmpXHCROnVWDWQKSqZwgnGFyRAilvIc4',  #Shashwat's
+        'AIzaSyAD58vGvx1OdgRq-XdYFZW8cyKhODkg6lc',   #Sisodia
+        'AIzaSyDs9N58rJ1n-C7qQ0B1qnhAP8DSzzLd1sU',    #Singh
+        'AIzaSyC5-mD5yfBlyy1K7H_HKhCk-05d9kF02_k',  #Akarsh
+        'AIzaSyCq7QLuMkfcm-68JL95Au5x9Vc_0qCp8iU'   #Shardul
 ]
-key_index = 0           
+key_index = 0         
 
 class geocoderTest():
     def __init__(self, geo_type='google'):
@@ -53,7 +58,7 @@ class geocoderTest():
             self._removeThumbs()
 
             self.autoComp.main(self.rows)
-            
+
             self._addGeocoding()
             self.fbGraph.processAll(self.rows)
             self._addFeaturedImage()
@@ -87,7 +92,7 @@ class geocoderTest():
         Each CSV file will be pertaining to a city.
         We can save almost half of the calls to geocoder API if we calculate the City cordinates only once.
         '''
-        
+
         for row in self.rows:
             if (row["lat"] is None or row["lat"] == ""):
                 #row = self.rows[0]
@@ -159,7 +164,7 @@ class geocoderTest():
                     print("Processed "+str(geoLocationAdded)+" rows.");
 
         print("Total precise entries: " + str(precise_count) + " out of " + str(geoLocationAdded) );
-   
+
 
     def _removeThumbs(self):
         for row in self.rows:
