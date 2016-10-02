@@ -119,7 +119,7 @@ class processGraph:
         return 0
     def _addPhone(self,row,node):
         if 'phone' in node:
-            ph = map(UTF8,str(node['phone']).split(','))
+            ph = map(UTF8,node['phone'].split(','))
             for i in range(1,6):
                 if not row['Phone'+str(i)]:
                     break
