@@ -56,7 +56,7 @@ class geocoderTest():
             fileBaseName = os.path.splitext(os.path.basename(fileName))[0]
             self._readCSV(fileName)
             self._removeThumbs()
-
+            print "\nCurrent file is",fileName,"\n"
             self.autoComp.main(self.rows)
 
             self._addGeocoding()
