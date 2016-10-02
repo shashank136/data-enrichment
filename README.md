@@ -24,3 +24,7 @@ python <filename>.py > {datetime}.log 2>&1 &
 
 * Specifically tested on linux systems
 * In our case substitute \<filename> with main
+* For substituting {datetime} with actual date time:
+
+ ```$(date -d "today" +"%Y%m%d%H%M")```
+
