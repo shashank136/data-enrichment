@@ -189,7 +189,7 @@ class geocoderTest():
         separators=[' ',',','.','/','-']
         count = 0
         for row in self.rows:
-            for key in ['Street Address', 'Locality', 'City', 'Country', 'listing_locations', 'autocomplete_precise_address']:
+            for key in ['Street Address', 'Locality', 'City', 'Country', 'listing_locations', 'autocomplete_precise_address', 'author', 'fullAddress']:
                 if key in row:
                     data = row[key]
                 separate=True
