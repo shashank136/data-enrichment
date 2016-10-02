@@ -22,7 +22,7 @@ KEYS = [
         'AIzaSyCp4DIN0mzmvQxcq0IOMtu48ZmFwr3qyj8', #Rohit
         'AIzaSyCgs8C71RqvWoeO69XBXVPQH006i7v4IkM', #Ananth's
         'AIzaSyCcijQW6eCvvt1ToSkjaGA4R22qBdZ0XsI', #Aakash's
-        'AIzaSyATi8d86dHYR3U39S9_zg_dWZIFK4c86ko', #Shubhankar's
+        'AIzaSyA-sGk-2Qg_yQAoJtQ1YUPKEYPCQ5scf5A', #Shubhankar's
         'AIzaSyBVmpXHCROnVWDWQKSqZwgnGFyRAilvIc4',  #Shashwat's
         'AIzaSyAD58vGvx1OdgRq-XdYFZW8cyKhODkg6lc',   #Sisodia
         'AIzaSyDs9N58rJ1n-C7qQ0B1qnhAP8DSzzLd1sU',    #Singh
@@ -47,7 +47,7 @@ class geocoderTest():
         self.fbGraph =  processGraph(key=None)
 
     def process(self):
-        fileNames = glob.glob('./input/sample_big.csv');
+        fileNames = glob.glob('./input/sb2.csv');
         print fileNames
         fileCount = 0
         for fileName in fileNames:
@@ -87,6 +87,8 @@ class geocoderTest():
         geoLocationAdded = 0;
         geoLocationFailed = 0;
         precise_count = 0
+        city_geo={}
+        new_city=""
         print 'ADDING GEOCODES...'
         '''
         Each CSV file will be pertaining to a city.
@@ -99,15 +101,18 @@ class geocoderTest():
                 #if row["City"] is None:
                 #    row = self.rows[1]#Highly unlikely that this will also fail
                 #row["City"] = row["City"].title()
-                city = row["City"].title()
-                row["City"]=city
+                new_city = row["City"].title()
+                row["City"]=new_city
                 # print("Processing: " + row["City"])
-                address_prec = "%s, %s" % (row["City"], row["Country"]) #calculating precise location
-                geocode_city=self.gmaps.geocode(address_prec) #geocodes for city
-                lat_prec=geocode_city[0]['geometry']['location']['lat']
-                lng_prec=geocode_city[0]['geometry']['location']['lng']
-                #print 'lat,lng ',lat_prec,lng_prec
-                time.sleep(1); # To prevent error from Google API for concurrent calls
+                if new_city not in city_geo:
+                    address_prec = "%s, %s" % (row["City"], row["Country"]) #calculating precise location
+                    geocode_city=self.gmaps.geocode(address_prec) #geocodes for city
+                    city_geo[new_city]={'lat':geocode_city[0]['geometry']['location']['lat']}
+                    city_geo[new_city]['lng']=geocode_city[0]['geometry']['location']['lng']
+                    #print 'lat,lng ',lat_prec,lng_prec
+                    time.sleep(1); # To prevent error from Google API for concurrent calls
+                lat_prec=city_geo[new_city]['lat']
+                lng_prec=city_geo[new_city]['lng']
 
                 if row["Locality"] is None:         # To handle any exception for operations on 'NoneType'
                     row["Locality"] = ""
