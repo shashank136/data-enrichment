@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from facepy import GraphAPI
 import logging
+import sys
 
 KEYS_FB=['1040517959329660|c7e458dd968fca33d05a18fddbcd86ab',   #Rohit
          '1697721727215546|a372f9c8b412e8b053094042fc4b42e6',   #Shantanu
@@ -9,7 +10,10 @@ KEYS_FB=['1040517959329660|c7e458dd968fca33d05a18fddbcd86ab',   #Rohit
 key_index = 0
 
 def UTF8(data):
-    return data.encode('utf-8','ignore')
+    try:
+        return data.encode('utf-8','ignore')
+    except:
+        return data
 
 class processGraph:
     def __init__(self, key=None):
@@ -48,7 +52,7 @@ class processGraph:
                             
     def _repairDetails(self,row,node):
         if 'description' in node and not row['Details']:
-            row['Details'] = UTF8(node['description'])
+            row['Details'] = node['description']
             #print "Added description "+node['description'][:40]+" to "+row["Name"]+" from facebook"
             return 1
         return 0
@@ -56,7 +60,7 @@ class processGraph:
     def _repairWebsite(self,row,node):
         if not row['Website']:
             if 'website' in node:
-                row['Website'] = UTF8(node['website'])
+                row['Website'] = node['website']
                 #print "Added website "+node['website']+" to "+row["Name"]+" from facebook"
                 return 1
         return 0    
@@ -64,7 +68,7 @@ class processGraph:
     def _repairPin(self,row,node):
         if 'location' in node:
             if not row['Pincode'] and 'zip' in node['location'] :
-                row['Pincode'] = UTF8(node['location']['zip'])
+                row['Pincode'] = node['location']['zip']
                 #print "Added pin "+node['location']['zip']+" to "+row["Name"]+" from facebook"
                 return 1
         return 0
@@ -72,14 +76,14 @@ class processGraph:
     def _repairStreet(self,row,node):
         if 'location' in node:
             if not row['Street Address'] and 'street' in node['location']:
-                row['Street Address'] = UTF8(node['location']['street'])
+                row['Street Address'] = node['location']['street']
                 #print "Added address "+node['location']['street']+" to "+row["Name"]+" from facebook"
                 return 1
         return 0    
                 
     def _addPage(self,row,node):
         if 'link' in node:
-            row['fb_page']=UTF8(node['link'])
+            row['fb_page']= node['link']
             #print "Added page "+node['link']+" to "+row["Name"]+" from facebook"
             return 1
         return 0
@@ -94,7 +98,7 @@ class processGraph:
                 
     def _addCover(self,row,node):                
             if 'cover' in node:
-                row['Images URL'] = UTF8(node['cover']['source'])+","+row['Images URL']
+                row['Images URL'] = node['cover']['source']+","+row['Images URL']
                 #print "Added cover "+node['cover']['source']+" to "+row["Name"]+" from facebook"
                 return 1
             return 0
@@ -107,7 +111,7 @@ class processGraph:
 ##                    #print "Added mail "+i+" to "+'Mail'+str(p)+" from facebook"
 ##                    p+=1
 ##            return p-2
-            email2 = UTF8(node['emails'][0])
+            email2 = node['emails'][0]
             if email2 != row['Mail']:
                 row['Mail2'] = email2
                 #print "Added mail "+node['emails'][0]
@@ -166,7 +170,9 @@ class processGraph:
     
     def processAll(self,rows):
         details,link,cover,website,pincode,street,dp,verified,phone,email=0,0,0,0,0,0,0,0,0,0 #stats
-        for row in rows:
+        total = len(rows)
+        print("Fetching info from FB Graph")
+        for progress,row in enumerate(rows):
             try:
                 node = self.searchPlace(row)
                 details += self._repairDetails(row,node)
@@ -179,8 +185,13 @@ class processGraph:
                 phone += self._addPhone(row,node)
                 email += self._addEmails(row,node)
                 verified += self._isVerified(row,node)
+                pro=int((float(progress)/total)*100)
+                sys.stdout.write("\r%d%%"%pro)
+                sys.stdout.flush()
             except:
                logging.exception("Error loading information from facebook for " + row['Name'])
-        print "New Info Added from Facebook\nDetails:%d Facebook Link:%d Cover:%d \nWebsite:%d Pincode:%d Address:%d Images:%d Verified %d/%d Phone:%d Emails:%d"%(details,link,cover,website,pincode,street,dp,verified,link,phone,email)
+        sys.stdout.write("\r100%")
+        sys.stdout.flush()
+        print "\nNew Info Added from Facebook\nDetails:%d Facebook Link:%d Cover:%d \nWebsite:%d Pincode:%d Address:%d Images:%d Verified %d/%d Phone:%d Emails:%d"%(details,link,cover,website,pincode,street,dp,verified,link,phone,email)
 
 
