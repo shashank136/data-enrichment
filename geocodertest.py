@@ -16,7 +16,7 @@ from imagesFetch import fetch
 
 from facepy import GraphAPI
 from autoComplete import AutoComplete
-from fbGraph import processGraph
+from fbGraph import processGraph,UTF8
 
 KEYS = [
         'AIzaSyCp4DIN0mzmvQxcq0IOMtu48ZmFwr3qyj8', #Rohit
@@ -189,7 +189,7 @@ class geocoderTest():
         separators=[' ',',','.','/','-']
         count = 0
         for row in self.rows:
-            for key in ['Street Address', 'Locality', 'City', 'Country', 'listing_locations']:
+            for key in ['Street Address', 'Locality', 'City', 'Country', 'listing_locations', 'autocomplete_precise_address']:
                 if key in row:
                     data = row[key]
                 separate=True
@@ -216,8 +216,10 @@ class geocoderTest():
             csvFile = open(fileName, 'w');
             writer = csv.DictWriter(csvFile, fieldnames=self.FIELDS);
             # write header
-            writer.writerow(dict(zip(self.FIELDS, self.FIELDS)));
+            writer.writerow(dict(zip(self.FIELDS, self.FIELDS)))
             for row in self.rows:
+                for i in row:
+                    row[i] = UTF8(row[i])
                 writer.writerow(row)
             csvFile.close()
         except Exception as err:
