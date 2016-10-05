@@ -33,6 +33,7 @@ class processMobile:
         try:
             return result['national_format'].count(' ') == 1, result['phone_number']
         except:
+            print "Bad Phone number "+str(phone_no)
             return False, phone_no
     
     def _addCountryCode(self,phone_no):
