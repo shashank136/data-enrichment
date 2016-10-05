@@ -158,7 +158,7 @@ class AutoComplete():
             return False,''
 
         if len(resp["predictions"]) == 1 and allow_single:
-            print '\t--> ',resp["predictions"][0]["description"]
+            print '\t--> ',resp["predictions"][0]["description"].encode('utf-8')
             return True,resp["predictions"][0]
 
         if len(resp["predictions"]) >= 1:
@@ -168,7 +168,7 @@ class AutoComplete():
                 multiple_match = False
                 correct_prediction = ''
                 for x in resp["predictions"]:
-                    print '\t--> ',x["description"]
+                    print '\t--> ',x["description"].encode('utf-8')
                     for term in x["terms"]:
                         if term['value'].strip().lower() == state.strip().lower():
                             if not found:

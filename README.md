@@ -10,7 +10,30 @@ This pre processing script that will run before data is fed inside WP All Import
 
 Also this script will help us in decreasing manual effort of our Operations team, thus saving a lot of time and causing less number of errors.
 
-# Running Python script in background:
+## Running Process in a separate 'tmux' session
+
+This prevents the running job from getting terminated in case you loose your ssh connection.
+Create a new tmux session:
+
+    $  tmux new -s <session_name>
+
+It logs you in a new session in tmux server.
+This session will keep running until you exit all the windows in it, or kill it manually.
+When any problem with ssh connection happens, you get detached to this session.
+Still the started jobs keeps running in it.
+
+Once detached, you can re-attach to the started session:
+
+    $ tmux a -t <session_name>
+
+In case you forget the session name, you can check out the active sessions in the main terminal:
+
+    $ tmux ls
+
+All the terminal properties are preserved, and will happen relative to the session you start the jobs in.
+So running the script is same as described below.
+
+## Running Python script in background:
 
 ```python
 python <filename>.py &
