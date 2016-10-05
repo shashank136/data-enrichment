@@ -13,7 +13,7 @@ import re
 import math
 from random import randint
 from imagesFetch import fetch
-
+from mobileAPI import processMobile
 from facepy import GraphAPI
 from autoComplete import AutoComplete
 from fbGraph import processGraph,UTF8
@@ -45,6 +45,7 @@ class geocoderTest():
         self.FIELDS = []
         self.autoComp = AutoComplete(key=KEYS)
         self.fbGraph =  processGraph(key=None)
+        self.mobiles = processMobile()
 
     def process(self):
         fileNames = glob.glob('./input/*.csv');
@@ -58,10 +59,10 @@ class geocoderTest():
             self._removeThumbs()
             print "\nCurrent file is",fileName,"\n"
             self.autoComp.main(self.rows)
-
             self._addGeocoding()
             self.fbGraph.processAll(self.rows)
             self._addFeaturedImage()
+            self.mobiles.processAll(self.rows)
             #self._formatWorkinghours()
             fileCount +=1
             self._writeCSV("./output/processed_"+fileBaseName+".csv");
@@ -78,7 +79,7 @@ class geocoderTest():
         # append new columns
         reader.fieldnames.extend(["Mail2", "listing_locations", "featured_image", "location_image", "fullAddress", "lat", "lng","prec_loc"]);
         reader.fieldnames.extend(["rating","reviews","author","Total Views","avg_rating","place_details", "fb_page", "fb_verified"]);
-        reader.fieldnames.extend(['autocomplete_precise_address','place_id','perma_closed'])
+        reader.fieldnames.extend(['autocomplete_precise_address','place_id','perma_closed','Mobiles'])
         self.FIELDS = reader.fieldnames;
         self.rows.extend(reader);
         inputFile.close();
