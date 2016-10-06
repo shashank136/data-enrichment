@@ -133,7 +133,7 @@ class AutoComplete():
                     phone_number.append(letter)
         return ''.join(phone_number)
 
-    def analyze_prediction(self, row, address,state, allow_single, allow_state_matching):
+    def analyze_prediction(self, row, address,state, allow_single, allow_state_matching,temp_json):
         address = address.replace('#','')
         extract = lambda x:'' if x is None else x
         phones = []
@@ -188,8 +188,13 @@ class AutoComplete():
             print '\tMATCHING PHONE NUMBERS'
             print '\t|| ORIGINAL : ',phones
             for x in resp["predictions"]:
-                url='https://maps.googleapis.com/maps/api/place/details/json?placeid='+x['place_id']+'&key='
-                resp_x = self.graceful_request(url)
+                resp_x = temp_json.get(x['place_id'])
+                if resp_x is None:
+                    url='https://maps.googleapis.com/maps/api/place/details/json?placeid='+x['place_id']+'&key='
+                    resp_x = self.graceful_request(url)
+                    temp_json[x['place_id']] = resp_x
+
+                # To prevent errors when graceful_request() returns 'None'
                 if resp_x is None:
                     break
                 resp_x = resp_x.get('result')
@@ -211,8 +216,13 @@ class AutoComplete():
                 correct_prediction = ''
                 print '\t|| ORIGINAL : ',website
                 for x in resp["predictions"]:
-                    url='https://maps.googleapis.com/maps/api/place/details/json?placeid='+x['place_id']+'&key='
-                    resp_x = self.graceful_request(url)
+                    resp_x = temp_json.get(x['place_id'])
+                    if resp_x is None:
+                        url='https://maps.googleapis.com/maps/api/place/details/json?placeid='+x['place_id']+'&key='
+                        resp_x = self.graceful_request(url)
+                        temp_json[x['place_id']] = resp_x
+
+                    # To prevent errors when graceful_request() returns 'None'
                     if resp_x is None:
                         break
                     resp_x = resp_x.get('result')
@@ -270,6 +280,7 @@ class AutoComplete():
         row_idx=2
 
         for row in self.rows:
+            temp_json = dict()
             address = ''
             valid = True                    # COMPLETE ADDRESS AVAILABLE
 
@@ -283,7 +294,7 @@ class AutoComplete():
                 address = row['Name'] + ', ' + row['Locality']
                 # False : Same state results not insured, hence not going for single prediction
                 # True : To ensure same state match
-                flag,prediction =  self.analyze_prediction(row,address,state,False,True)
+                flag,prediction =  self.analyze_prediction(row,address,state,False,True,temp_json)
 
             if flag == False:
                 if valid:
@@ -291,7 +302,7 @@ class AutoComplete():
                 if row['Pincode'] != '':
                     address = row['Name'] + ', ' + row['Pincode']
                     # True : Because same state results are insured, hence single prediction can be taken + Added advantage of wrong information in csv being overcomed
-                    flag, prediction = self.analyze_prediction(row,address,state,True,True)
+                    flag, prediction = self.analyze_prediction(row,address,state,True,True,temp_json)
                     # FOR LONG QUERIES IT'S NOT ALWAYS INSURED THAT PINCODE IS IN PREDICTION. THIS MAKES THE DECISION TO NOT CHECK STATE, A WRONG STEP.
                     # HENCE COFORMING HERE FOR THOSE CASES
                     # AS IT's NOT A GENERAL CASE Flag CANNOT BE FALSE
@@ -315,7 +326,7 @@ class AutoComplete():
                     address = row['Name'] + ', ' + row['City']
                     # False : If city name is a subset of locality name of any place, it will show in prediction and that may not be in same state. Hence state match is necessary
                     # True : Sometimes institute's name is a subset of a large name. For those cases a single prediction with the matching state leads to inaccuracy, given the earlier queries didn't work out. This case needs review, so keeping it True.
-                    flag,prediction =  self.analyze_prediction(row,address,state,False,True)
+                    flag,prediction =  self.analyze_prediction(row,address,state,False,True,temp_json)
 
                     if flag == False and valid:
                         print '\t# CHANGING QUERY(3)'
@@ -323,7 +334,7 @@ class AutoComplete():
 
                         # False : State match is not a guarntee because of high noise in query.
                         # False : Single matching state is not a guaranteed. because of high noise in query
-                        flag, prediction =  self.analyze_prediction(row,address,state,False,False)
+                        flag, prediction =  self.analyze_prediction(row,address,state,False,False,temp_json)
 
             if flag == True:
                 fixed_count += 1
