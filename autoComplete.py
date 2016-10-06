@@ -428,6 +428,7 @@ class AutoComplete():
                     pass
                 try:
                     view=resp['geometry']['viewport']
+                    row['viewport']=view
                     no_vprt+=1
                 except:
                     pass
