@@ -77,7 +77,7 @@ class geocoderTest():
         # skip the head row
         # next(reader)
         # append new columns
-        reader.fieldnames.extend(["Mail2", "listing_locations", "featured_image", "location_image", "fullAddress", "lat", "lng","prec_loc"]);
+        reader.fieldnames.extend(["Mail2", "listing_locations", "featured_image", "location_image", "fullAddress", "lat", "lng","viewport","prec_loc"]);
         reader.fieldnames.extend(["rating","reviews","author","Total Views","avg_rating","place_details", "fb_page", "fb_verified"]);
         reader.fieldnames.extend(['autocomplete_precise_address','place_id','perma_closed','Mobiles'])
         self.FIELDS = reader.fieldnames;
