@@ -1,5 +1,6 @@
 # Usage :
 In Frontend: python main.py
+
 In Background: python main.py > $(date -d "today" +"%Y%m%d%H%M").log 2>&1 &
 
 
