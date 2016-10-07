@@ -42,12 +42,14 @@ class processGraph:
         for place in search_result['data']:
             if not 'location' in place:
                 continue
-            if unicode(pin) == unicode(place['location']['zip'])  and unicode(pin):
-                return self.graph.get(place['id']+"?fields=location,is_verified,description,phone,link,cover,website")
-            if city == unicode(place['location']['city'].lower()) and not probable:
-                probable = place['id']            
+            if 'zip' in place['location'] :
+                if unicode(pin) == unicode(place['location']['zip'])  and unicode(pin):
+                    return self.graph.get(place['id']+"?fields=location,is_verified,description,phone,link,cover,website,emails")
+            if 'city' in place['location'] :
+                if city == unicode(place['location']['city'].lower()) and not probable:
+                    probable = place['id']            
         if probable:
-            return self.graph.get(probable+"?fields=location,description,is_verified,phone,link,cover,website")
+            return self.graph.get(probable+"?fields=location,description,is_verified,phone,link,cover,website,emails")
         return dict()
                             
     def _repairDetails(self,row,node):
