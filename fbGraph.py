@@ -2,6 +2,7 @@
 from facepy import GraphAPI
 import logging
 import sys
+#from validate_email import validate_email
 
 KEYS_FB=['1040517959329660|c7e458dd968fca33d05a18fddbcd86ab',   #Rohit
          '1697721727215546|a372f9c8b412e8b053094042fc4b42e6',   #Shantanu
@@ -105,20 +106,22 @@ class processGraph:
                 return 1
             return 0
     def _addEmails(self,row,node):
+        if row['Mail'] and not True: #validate_email(row['Mail'],verify=True)
+            print "Invalid mail removed:"+row['Mail']
+            row['Mail'] = ""
+        check = 0
         if 'emails' in node:
-##            p=2
-##            for i in node['emails']:
-##                if i != row['Mail']:
-##                    row['Mail'+str(p)] = i
-##                    #print "Added mail "+i+" to "+'Mail'+str(p)+" from facebook"
-##                    p+=1
-##            return p-2
-            email2 = node['emails'][0]
-            if email2 != row['Mail']:
-                row['Mail2'] = email2
-                #print "Added mail "+node['emails'][0]
-                return 1
-        return 0
+            for i in node['emails']:
+                if True: #validate_email(i,verify=True)
+                    if row['Mail']:
+                        row['Mail2'] = i
+                        return check+1
+                    row['Mail'] = i
+                    check = 1
+                else:
+                    print "Invalid mail not considered:"+i
+                
+        return check
     def _addPhone(self,row,node):
         if 'phone' in node:
             ph = map(UTF8,node['phone'].split(','))
