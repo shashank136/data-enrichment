@@ -39,7 +39,7 @@ class processMobile:
             return False, phone_no
     
     def _addCountryCode(self,phone_no):
-        phone_no=str(phone_no)
+        phone_no=unicode(phone_no)
         phone_no=phone_no.replace(' ','').replace('(','').replace(')','')
         if '0091' in phone_no[0:len(phone_no)/2+1]:
             phone_no=phone_no.replace('0091','')
@@ -58,7 +58,7 @@ class processMobile:
             for i in range(1,6):
                 nphn=''
                 if row['Phone'+str(i)] is not None:
-                    row['Phone'+str(i)]=filter(lambda x: not x.isalpha(),str(row['Phone'+str(i)])).strip().replace(' ','')
+                    row['Phone'+str(i)]=filter(lambda x: not x.isalpha(),unicode(row['Phone'+str(i)])).strip().replace(' ','')
                     # nphn=row['Phone'+str(i)].replace(' ','').replace('(','').replace(')','').replace('-','')
                     # if len(nphn)>=20:
                     #     phn_no_ls+= 
