@@ -113,7 +113,7 @@ class processGraph:
         if 'emails' in node:
             for i in node['emails']:
                 if validate_email(i):
-                    if row['Mail']:
+                    if row['Mail'] and i.strip() not in row['Mail'].strip():
                         row['Mail2'] = i
                         return check+1
                     row['Mail'] = i
