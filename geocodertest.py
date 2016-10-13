@@ -17,6 +17,7 @@ from mobileAPI import processMobile
 from facepy import GraphAPI
 from autoComplete import AutoComplete
 from fbGraph import processGraph,UTF8
+from validate_email import filterMails
 
 KEYS = [
         'AIzaSyCp4DIN0mzmvQxcq0IOMtu48ZmFwr3qyj8', #Rohit
@@ -46,6 +47,7 @@ class geocoderTest():
         self.autoComp = AutoComplete(key=KEYS)
         self.fbGraph =  processGraph(key=None)
         self.mobiles = processMobile()
+        self.filterMails=filterMails
 
     def process(self):
         fileNames = glob.glob('./input/*.csv');
@@ -64,6 +66,7 @@ class geocoderTest():
             self.fbGraph.processAll(self.rows)
             self._addFeaturedImage()
             self.mobiles.processAll(self.rows)
+            self.filterMails(self.rows,fileBaseName)
             #self._formatWorkinghours()
             fileCount +=1
             self._writeCSV("./output/processed_"+fileBaseName+".csv");
