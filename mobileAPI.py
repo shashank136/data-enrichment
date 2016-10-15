@@ -112,6 +112,9 @@ class processMobile:
                     continue
                 isMob,cleaned_no = self._isMobile(self._addCountryCode(UTF8(n)))
                 if isMob:
+                    cleaned_no= cleaned_no.replace('+91','')
+                    if cleaned_no[0:2]=='91':
+                        cleaned_no=cleaned_no[2:]
                     mobiles.append(cleaned_no)
             pro=int((float(progress)/total)*100)
             sys.stdout.write("\r%d%%"%pro)
