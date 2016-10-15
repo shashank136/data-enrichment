@@ -119,6 +119,6 @@ class processMobile:
             pro=int((float(progress)/total)*100)
             sys.stdout.write("\r%d%%"%pro)
             sys.stdout.flush()
-            row['Mobiles'] = ','.join(list(set(mobiles)))
+            row['Mobiles'] = ', '.join(list(set(mobiles)))
             #print(row['Mobiles'])
             
