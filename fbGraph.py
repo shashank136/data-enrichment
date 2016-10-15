@@ -54,7 +54,7 @@ class processGraph:
                 found = True
                 break
         if not found:
-            print 'NO STATE MATCH FOR CITY'
+            print('NO STATE MATCH FOR CITY');
             sys.exit()
         else:
             return state
@@ -330,13 +330,13 @@ class processGraph:
                 stat+=method(row,node)
             except:
                 logging.exception("Error loading %s from facebook for %s"%(selection,row['Name']))
-        print "New Info Added from Facebook\n%s:%d"%(stat)
+        print("New Info Added from Facebook\n%s:%d"%(stat));
 
     def processAll(self,rows):
         details,link,cover,website,pincode,street,dp,verified,phone,email=0,0,0,0,0,0,0,0,0,0 #stats
         total = len(rows)
         state = self.get_state(rows[0]['City'])
-        print 'STATE : ',state
+        print('STATE : ',state);
         print("Fetching info from FB Graph")
         for progress,row in enumerate(rows):
             try:
@@ -358,4 +358,4 @@ class processGraph:
                logging.exception("Error loading information from facebook for " + row['Name'])
         sys.stdout.write("\r100%")
         sys.stdout.flush()
-        print "\nNew Info Added from Facebook\nDetails:%d Facebook Link:%d Cover:%d \nWebsite:%d Pincode:%d Address:%d Images:%d Verified %d/%d Phone:%d Emails:%d"%(details,link,cover,website,pincode,street,dp,verified,link,phone,email)
+        print("\nNew Info Added from Facebook\nDetails:%d Facebook Link:%d Cover:%d \nWebsite:%d Pincode:%d Address:%d Images:%d Verified %d/%d Phone:%d Emails:%d"%(details,link,cover,website,pincode,street,dp,verified,link,phone,email));

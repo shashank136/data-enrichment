@@ -51,7 +51,7 @@ class geocoderTest():
 
     def process(self):
         fileNames = glob.glob('./input/*.csv');
-        print fileNames
+        print(fileNames);
         fileCount = 0
         for fileName in fileNames:
             self.rows = []
@@ -60,7 +60,7 @@ class geocoderTest():
             self._readCSV(fileName)
             #self.rows = self.rows[:20]
             self._removeThumbs()
-            print "\nCurrent file is",fileName,"\n"
+            print("\nCurrent file is"+fileName+"\n");
             self.autoComp.main(self.rows)
             self._addGeocoding()
             self.fbGraph.processAll(self.rows)
@@ -94,7 +94,7 @@ class geocoderTest():
         precise_count = 0
         city_geo={}
         new_city=""
-        print 'ADDING GEOCODES...'
+        print('ADDING GEOCODES...');
         '''
         Each CSV file will be pertaining to a city.
         We can save almost half of the calls to geocoder API if we calculate the City cordinates only once.
@@ -214,7 +214,7 @@ class geocoderTest():
                     count+=1
 
     def _writeCSV(self, fileName):
-        print "Writing to CSV..."
+        print("Writing to CSV...");
         try:
             self._titleCase()
             # DictWriter

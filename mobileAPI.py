@@ -25,7 +25,7 @@ class processMobile:
                     key = keys[key_index]
                 else:
                     break
-        print "None of the keys worked!"
+        print("None of the keys worked!");
         return { 'national_format': "xx xx xx", 'phone_number': phone_no}
 
     def _isMobile(self,phone_no):
@@ -35,7 +35,7 @@ class processMobile:
             #print phone_no
             return result['national_format'].count(' ') == 1, result['phone_number']
         except:
-            print "Bad Phone number "+str(phone_no)
+            print("Bad Phone number "+str(phone_no));
             return False, phone_no
     
     def _addCountryCode(self,phone_no):
@@ -94,7 +94,7 @@ class processMobile:
             #     if len(noslist[i])>=20:
             #         splt_no=noslist
             #print 'No of noslist',len(noslist)
-            print noslist
+            print(noslist);
             for i in range(0,len(noslist)):
                 if i==5:
                     break;
