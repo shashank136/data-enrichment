@@ -30,23 +30,23 @@ class emailFilter(threading.Thread):
                         code, message = server.rcpt(str(email))
                         server.quit()
                         if code == 250:
-                                print("%s was accepted in thread %s"%(email,self.id))
+##                                print("%s was accepted in thread %s"%(email,self.id))
                                 self.accepted.append(email)
                                 return True
-                        print("%s was rejected in thread %s"%(email,self.id))
+##                        print("%s was rejected in thread %s"%(email,self.id))
                         self.rejected.append(email)
                         return False
                 except (NoNameservers,NXDOMAIN, NoAnswer) as e:
-                        print("%s was rejected due to domain error in thread %s because %s"%(email,self.id,e))
+##                        print("%s was rejected due to domain error in thread %s because %s"%(email,self.id,e))
                         self.rejected.append(email)
                         return False
                 except SMTPServerDisconnected as e:
-                        print("%s was deemed accepted in thread %s because server didn't behave as expected(%s)"%(email,self.id,e))
+##                        print("%s was deemed accepted in thread %s because server didn't behave as expected(%s)"%(email,self.id,e))
                         self.accepted.append(email)
                         return True
                 except:
-                        logging.exception("Possible problem in Connection, email: %s was assumed to be correct"%(email))
-                        print("%s was deemed to be accepted in thread %s"%(email,self.id))
+                        logging.exception("This error is not a problem, email: %s"%(email))
+##                        print("%s was deemed to be accepted in thread %s"%(email,self.id))
                         self.accepted.append(email)
                         return True
 
