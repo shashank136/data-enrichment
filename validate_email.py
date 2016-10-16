@@ -66,10 +66,11 @@ class emailFilter(threading.Thread):
                 return self.accepted
 
 
-def filterMails(rows,fname,chunk=50):
+def filterMails(rows,fname,max_threads=10):
         threads=[]
         rejected=[]
         accepted=[]
+        chunk=len(rows)//max_threads
         for i in range(0,len(rows),chunk):
                 try:
                         t=emailFilter(i//chunk+1,rows, i, i+chunk)
