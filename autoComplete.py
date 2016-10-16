@@ -378,7 +378,7 @@ class AutoComplete():
                 progress+=1
                 try:
                     photos=resp['photos']
-                    row["Total Views"] = randint(200,500)
+                    row["Total Views"] = len(photos)*randint(300,500)
                     for i in range(len(photos)):
                         photo_url='https://maps.googleapis.com/maps/api/place/photo?maxwidth=1600&photoreference='+photos[i]['photo_reference']+'&key='+self.GOOGLE_API_KEYS[self.key_index]
                         t=requests.get(photo_url)
@@ -388,11 +388,11 @@ class AutoComplete():
 
                 except Exception:
                     #print "Image Not found"
-                    row['Total Views'] = randint(50,200)
+                    row['Total Views'] = randint(100,250)
                 #print "len jsonObj, progress",len(self.json_objects),progress
 
             else:
-                row['Total Views'] = randint(50,200)
+                row['Total Views'] = randint(100,250)
             #sys.stdout.write("\r%d%%" % int(math.ceil((float(progress)/self.fixed_count)*100)))
             #sys.stdout.flush()
         print "\nNo of place id ->"+str(no_place_id)
@@ -405,7 +405,7 @@ class AutoComplete():
                 resp=self.json_objects[row['place_id']]
                 try:
                     reviews=resp['reviews']
-                    row["Total Views"] += len(reviews)*randint(10,20)
+                    row["Total Views"] += len(reviews)*randint(150,200)
                     for i in range(len(reviews)):
                         total += reviews[i]['rating']
                         if i==(len(reviews)-1):
