@@ -3,7 +3,7 @@ from facepy import GraphAPI
 import logging
 import sys
 import glob,csv
-
+from random import randint
 
 KEYS_FB=['1040517959329660|c7e458dd968fca33d05a18fddbcd86ab',   #Rohit
          '1697721727215546|a372f9c8b412e8b053094042fc4b42e6',   #Shantanu
@@ -20,6 +20,7 @@ def UTF8(data):
 class processGraph:
     def __init__(self, key=None):
         global key_index
+        self.viewFactor=0
         """
     >>> Graph = processGraph()
     You May Initialise Facebook GraphAPI with your own AppID and AppSecret
@@ -199,6 +200,7 @@ class processGraph:
         return dict()
 
     def searchPlace(self,row,state):
+        self.viewFactor=0
         query = row['Name']
         node = self.analyze_prediction(row,query,False)
 
@@ -216,6 +218,7 @@ class processGraph:
         if 'description' in node and not row['Details']:
             row['Details'] = node['description']
             #print "Added description "+node['description'][:40]+" to "+row["Name"]+" from facebook"
+            self.viewFactor+=1
             return 1
         return 0
 
@@ -247,6 +250,7 @@ class processGraph:
         if 'link' in node:
             row['fb_page']= node['link']
             #print "Added page "+node['link']+" to "+row["Name"]+" from facebook"
+            self.viewFactor+=1
             return 1
         return 0
 
@@ -254,6 +258,7 @@ class processGraph:
         if 'is_verified' in node:
             if node['is_verified']:
                 row['fb_verified']= 'True'
+                self.viewFactor+=2
                 return 1
             row['fb_verified']= 'False'
         return 0
@@ -262,6 +267,7 @@ class processGraph:
             if 'cover' in node:
                 row['Images URL'] = node['cover']['source']+","+row['Images URL']
                 #print "Added cover "+node['cover']['source']+" to "+row["Name"]+" from facebook"
+                self.viewFactor+=1
                 return 1
             return 0
     def _addEmails(self,row,node):
@@ -303,6 +309,7 @@ class processGraph:
             if 'url' in profile_pic['data'] and 'is_silhouette' in profile_pic['data']:
                 if not profile_pic['data']['is_silhouette']:
                     row['Images URL'] += profile_pic['data']['url']+","
+                    self.viewFactor+=2
                     return 1
         return 0
     def processSelective(self,rows,selection):
@@ -332,6 +339,8 @@ class processGraph:
                 logging.exception("Error loading %s from facebook for %s"%(selection,row['Name']))
         print("New Info Added from Facebook\n%s:%d"%(stat));
 
+    def _addViews(self,row):
+        row['Total Views']+=self.viewFactor*randint(100,200)
     def processAll(self,rows):
         details,link,cover,website,pincode,street,dp,verified,phone,email=0,0,0,0,0,0,0,0,0,0 #stats
         total = len(rows)
@@ -351,6 +360,7 @@ class processGraph:
                 phone += self._addPhone(row,node)
                 email += self._addEmails(row,node)
                 verified += self._isVerified(row,node)
+                self._addViews(row)
                 pro=int((float(progress)/total)*100)
                 sys.stdout.write("\r%d%%"%pro)
                 sys.stdout.flush()
