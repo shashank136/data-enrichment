@@ -13,3 +13,4 @@ pytz==2016.6.1
 requests==2.10.0
 six==1.10.0
 slugify==0.0.1
+wikipedia==1.4.0

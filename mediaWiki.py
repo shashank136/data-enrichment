@@ -1,6 +1,8 @@
 import wikipedia
 import logging
 from phpserialize import serialize
+from fbGraph import UTF8
+import sys
 
 wikipedia.set_rate_limiting(rate_limit=True)
 
@@ -58,12 +60,17 @@ class mediaWiki:
 
     def processAll(self,rows):
         pg=0
-        for row in rows:
+        total=len(rows)
+        for progress,row in enumerate(rows):
             page = self.getPage(row)
             if page:
                 pg+=1
                 images = filter(lambda x: not x.endswith('svg'),page.images)
-                row['wikipedia']=serialize({'page_title':page.title, 'images':images,'summary':page.summary,'content':page.content})
+                row['wikipedia']=serialize({'page_title':UTF8(page.title), 'images':UTF8(images),'summary':UTF8(page.summary),'content':UTF8(page.content)})
+            
+            sys.stdout.flush()
+            sys.stdout.write("\r%d%%"%int((float(progress)/total)*100))
+            
                 
         print("Pages found on wikipedis : %d/%d"%(pg,len(rows)))
             
