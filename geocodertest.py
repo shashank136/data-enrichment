@@ -17,6 +17,7 @@ from mobileAPI import processMobile
 from facepy import GraphAPI
 from autoComplete import AutoComplete
 from fbGraph import processGraph,UTF8
+from mediaWiki import mediaWiki
 
 
 KEYS = [
@@ -48,6 +49,7 @@ class geocoderTest():
         self.autoComp = AutoComplete(key=KEYS)
         self.fbGraph =  processGraph(key=None)
         self.mobiles = processMobile()
+        self.wikipedia = mediaWiki()
 
     def process(self):
         fileNames = glob.glob('./input/*.csv');
@@ -57,7 +59,7 @@ class geocoderTest():
             self.rows = []
             self.FIELDS = []
             fileBaseName = os.path.splitext(os.path.basename(fileName))[0]
-            self._readCSV(fileName)
+            self._readCSV(fileName)            
             self._removeThumbs()
             print "\nCurrent file is",fileName,"\n"
             self.autoComp.main(self.rows)
@@ -65,6 +67,7 @@ class geocoderTest():
             self.fbGraph.processAll(self.rows)
             self._addFeaturedImage()
             self.mobiles.processAll(self.rows)
+            self.wikipedia.processAll(self.rows)
             '''
             added patternmatcher
             '''
@@ -86,7 +89,7 @@ class geocoderTest():
 
         reader.fieldnames.extend(["Mail2", "listing_locations", "featured_image", "location_image", "fullAddress", "lat", "lng","viewport","prec_loc"]);
         reader.fieldnames.extend(["rating","reviews","author","Total Views","avg_rating","place_details", "fb_page", "fb_verified"]);
-        reader.fieldnames.extend(['autocomplete_precise_address','place_id','perma_closed','Mobiles'])
+        reader.fieldnames.extend(['autocomplete_precise_address','place_id','perma_closed','Mobiles','wikipedia'])
         self.FIELDS = reader.fieldnames;
         self.rows.extend(reader); 
         #self.rows=self.new_rows
