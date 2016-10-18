@@ -17,7 +17,7 @@ from mobileAPI import processMobile
 from facepy import GraphAPI
 from autoComplete import AutoComplete
 from fbGraph import processGraph,UTF8
-from validate_email import filterMails
+
 
 KEYS = [
         'AIzaSyCp4DIN0mzmvQxcq0IOMtu48ZmFwr3qyj8', #Rohit
@@ -43,31 +43,32 @@ class geocoderTest():
             key_index += 1
             self.gmaps = googlemaps.Client(key=KEYS[key_index])
         self.rows = []
+        #self.new_rows=[]
         self.FIELDS = []
         self.autoComp = AutoComplete(key=KEYS)
         self.fbGraph =  processGraph(key=None)
         self.mobiles = processMobile()
-        self.filterMails=filterMails
 
     def process(self):
         fileNames = glob.glob('./input/*.csv');
-        print(fileNames);
+        print fileNames
         fileCount = 0
         for fileName in fileNames:
             self.rows = []
             self.FIELDS = []
             fileBaseName = os.path.splitext(os.path.basename(fileName))[0]
             self._readCSV(fileName)
-            #self.rows = self.rows[:20]
             self._removeThumbs()
-            print("\nCurrent file is"+fileName+"\n");
+            print "\nCurrent file is",fileName,"\n"
             self.autoComp.main(self.rows)
             self._addGeocoding()
             self.fbGraph.processAll(self.rows)
             self._addFeaturedImage()
             self.mobiles.processAll(self.rows)
-            self.filterMails(self.rows,fileBaseName)
-            #self._formatWorkinghours()
+            '''
+            added patternmatcher
+            '''
+            # self._formatWorkinghours()
             fileCount +=1
             self._writeCSV("./output/processed_"+fileBaseName+".csv");
             print("***Successfully processed "+str(fileCount)+" files.***");
@@ -81,11 +82,14 @@ class geocoderTest():
         # skip the head row
         # next(reader)
         # append new columns
+
+
         reader.fieldnames.extend(["Mail2", "listing_locations", "featured_image", "location_image", "fullAddress", "lat", "lng","viewport","prec_loc"]);
         reader.fieldnames.extend(["rating","reviews","author","Total Views","avg_rating","place_details", "fb_page", "fb_verified"]);
         reader.fieldnames.extend(['autocomplete_precise_address','place_id','perma_closed','Mobiles'])
         self.FIELDS = reader.fieldnames;
-        self.rows.extend(reader);
+        self.rows.extend(reader); 
+        #self.rows=self.new_rows
         inputFile.close();
 
     def _addGeocoding(self):
@@ -94,7 +98,7 @@ class geocoderTest():
         precise_count = 0
         city_geo={}
         new_city=""
-        print('ADDING GEOCODES...');
+        print 'ADDING GEOCODES...'
         '''
         Each CSV file will be pertaining to a city.
         We can save almost half of the calls to geocoder API if we calculate the City cordinates only once.
@@ -214,7 +218,7 @@ class geocoderTest():
                     count+=1
 
     def _writeCSV(self, fileName):
-        print("Writing to CSV...");
+        print "Writing to CSV..."
         try:
             self._titleCase()
             # DictWriter

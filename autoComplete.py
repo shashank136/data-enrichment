@@ -257,7 +257,6 @@ class AutoComplete():
 
     def main(self, rows_data):
         self.rows = rows_data
-
         self._autoComplete()
         self._updateAddress()
         self._addLocationPhoto()
@@ -366,7 +365,7 @@ class AutoComplete():
     def _addLocationPhoto(self):
         no_place_id=0
         progress=0
-        print '\nAdding photos'
+        print '\nAdding photos...please wait...'
         for row in self.rows:
             details_reviews=[]
             detail_placeid=""
@@ -378,7 +377,7 @@ class AutoComplete():
                 progress+=1
                 try:
                     photos=resp['photos']
-                    row["Total Views"] = len(photos)*randint(300,500)
+                    row["Total Views"] = len(photos)*randint(200,250)
                     for i in range(len(photos)):
                         photo_url='https://maps.googleapis.com/maps/api/place/photo?maxwidth=1600&photoreference='+photos[i]['photo_reference']+'&key='+self.GOOGLE_API_KEYS[self.key_index]
                         t=requests.get(photo_url)
@@ -388,11 +387,11 @@ class AutoComplete():
 
                 except Exception:
                     #print "Image Not found"
-                    row['Total Views'] = randint(100,250)
+                    row['Total Views'] = randint(100,300)
                 #print "len jsonObj, progress",len(self.json_objects),progress
 
             else:
-                row['Total Views'] = randint(100,250)
+                row['Total Views'] = randint(100,300)
             #sys.stdout.write("\r%d%%" % int(math.ceil((float(progress)/self.fixed_count)*100)))
             #sys.stdout.flush()
         print "\nNo of place id ->"+str(no_place_id)
@@ -405,7 +404,7 @@ class AutoComplete():
                 resp=self.json_objects[row['place_id']]
                 try:
                     reviews=resp['reviews']
-                    row["Total Views"] += len(reviews)*randint(150,200)
+                    row["Total Views"] += len(reviews)*randint(500,600)
                     for i in range(len(reviews)):
                         total += reviews[i]['rating']
                         if i==(len(reviews)-1):

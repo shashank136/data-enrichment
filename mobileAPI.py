@@ -25,7 +25,7 @@ class processMobile:
                     key = keys[key_index]
                 else:
                     break
-        print("None of the keys worked!");
+        print "None of the keys worked!"
         return { 'national_format': "xx xx xx", 'phone_number': phone_no}
 
     def _isMobile(self,phone_no):
@@ -35,7 +35,7 @@ class processMobile:
             #print phone_no
             return result['national_format'].count(' ') == 1, result['phone_number']
         except:
-            print("Bad Phone number "+str(phone_no));
+            print "Bad Phone number "+str(phone_no)
             return False, phone_no
     
     def _addCountryCode(self,phone_no):
@@ -54,16 +54,25 @@ class processMobile:
     def checkNo(self,rows):
         for row in rows:
             noslist=[]
+            noslist1=[]
             phn_no_ls=''
             for i in range(1,6):
                 nphn=''
                 if row['Phone'+str(i)] is not None:
-                    row['Phone'+str(i)]=filter(lambda x: not x.isalpha(),unicode(row['Phone'+str(i)])).strip().replace(' ','')
+                    y=(filter(lambda x: not x.isalpha(),unicode(row['Phone'+str(i)])).strip().replace(' ',''))
+                    noslist1.append(y)
+                    row['Phone'+str(i)]=None
                     # nphn=row['Phone'+str(i)].replace(' ','').replace('(','').replace(')','').replace('-','')
                     # if len(nphn)>=20:
                     #     phn_no_ls+= 
-                    phn_no_ls+=row['Phone'+str(i)]+','
+                    # phn_no_ls+=row['Phone'+str(i)]+','
 
+            noslist1=filter(None,noslist1);
+            noslist1=list(set(noslist1))
+            print 'noslist1',noslist1
+            for i in range(len(noslist1)):
+                row['Phone'+str((i+1))]=noslist1[i]
+                phn_no_ls+=row['Phone'+str((i+1))]+','
             phn_no_ls=phn_no_ls.split(',')
             phn_no_ls=filter(None,phn_no_ls)
 
@@ -74,10 +83,10 @@ class processMobile:
                     n=1
                     if len(phn_no_ls[i])%2==0:
                         n=0
-                    #print 'phn no',phn_no_ls[i]
+                    print 'phn no',phn_no_ls[i]
                     splt_no=phn_no_ls[i][0:-len(phn_no_ls[i])/2+n]+'/'+phn_no_ls[i][-len(phn_no_ls[i])/2+n:]
                     phn_no_ls[i]=splt_no
-                    #print 'splt_no',splt_no
+                    print 'splt_no',splt_no
             for no in phn_no_ls:
                 if '/' not in no:
                     noslist.append(no)
@@ -94,7 +103,7 @@ class processMobile:
             #     if len(noslist[i])>=20:
             #         splt_no=noslist
             #print 'No of noslist',len(noslist)
-            print(noslist);
+            print noslist
             for i in range(0,len(noslist)):
                 if i==5:
                     break;

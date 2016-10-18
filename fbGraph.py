@@ -341,6 +341,7 @@ class processGraph:
 
     def _addViews(self,row):
         row['Total Views']+=self.viewFactor*randint(100,200)
+        
     def processAll(self,rows):
         details,link,cover,website,pincode,street,dp,verified,phone,email=0,0,0,0,0,0,0,0,0,0 #stats
         total = len(rows)
