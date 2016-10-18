@@ -53,3 +53,9 @@ python <filename>.py > {datetime}.log 2>&1 &
 
  ```$(date -d "today" +"%Y%m%d%H%M")```
 
+### Finding phone number patterns in file
+
+```python
+python findNoPat.py
+```
+* It will work on all processed files and save the output to ./output/PatMatch
