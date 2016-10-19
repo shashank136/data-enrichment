@@ -69,7 +69,7 @@ class processMobile:
 
             noslist1=filter(None,noslist1);
             noslist1=list(set(noslist1))
-            print 'noslist1',noslist1
+            #print 'noslist1',noslist1
             for i in range(len(noslist1)):
                 row['Phone'+str((i+1))]=noslist1[i]
                 phn_no_ls+=row['Phone'+str((i+1))]+','
@@ -86,7 +86,7 @@ class processMobile:
                     print 'phn no',phn_no_ls[i]
                     splt_no=phn_no_ls[i][0:-len(phn_no_ls[i])/2+n]+'/'+phn_no_ls[i][-len(phn_no_ls[i])/2+n:]
                     phn_no_ls[i]=splt_no
-                    print 'splt_no',splt_no
+                    #print 'splt_no',splt_no
             for no in phn_no_ls:
                 if '/' not in no:
                     noslist.append(no)
@@ -99,11 +99,7 @@ class processMobile:
                     noslist=noslist+splt_list
             noslist=set(noslist)
             noslist=list(noslist)
-            # for i in range(len(noslist)):
-            #     if len(noslist[i])>=20:
-            #         splt_no=noslist
-            #print 'No of noslist',len(noslist)
-            print noslist
+          
             for i in range(0,len(noslist)):
                 if i==5:
                     break;
