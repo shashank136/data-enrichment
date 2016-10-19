@@ -5,6 +5,7 @@ import smtplib
 from smtplib import SMTPServerDisconnected
 import logging
 import threading
+import csv
 class emailFilter(threading.Thread):
 
 
@@ -30,23 +31,23 @@ class emailFilter(threading.Thread):
                         code, message = server.rcpt(str(email))
                         server.quit()
                         if code == 250:
-##                                print("%s was accepted in thread %s"%(email,self.id))
+                                print("%s was accepted in thread %s"%(email,self.id))
                                 self.accepted.append(email)
                                 return True
-##                        print("%s was rejected in thread %s"%(email,self.id))
+                        print("%s was rejected in thread %s"%(email,self.id))
                         self.rejected.append(email)
                         return False
                 except (NoNameservers,NXDOMAIN, NoAnswer) as e:
-##                        print("%s was rejected due to domain error in thread %s because %s"%(email,self.id,e))
+                        print("%s was rejected due to domain error in thread %s because %s"%(email,self.id,e))
                         self.rejected.append(email)
                         return False
                 except SMTPServerDisconnected as e:
-##                        print("%s was deemed accepted in thread %s because server didn't behave as expected(%s)"%(email,self.id,e))
+                        print("%s was deemed accepted in thread %s because server didn't behave as expected(%s)"%(email,self.id,e))
                         self.accepted.append(email)
                         return True
                 except:
-                        logging.exception("This error is not a problem, email: %s"%(email))
-##                        print("%s was deemed to be accepted in thread %s"%(email,self.id))
+                        logging.exception("Possible problem in Connection, email: %s was assumed to be correct"%(email))
+                        print("%s was deemed to be accepted in thread %s"%(email,self.id))
                         self.accepted.append(email)
                         return True
 
@@ -66,11 +67,10 @@ class emailFilter(threading.Thread):
                 return self.accepted
 
 
-def filterMails(rows,fname,max_threads=10):
+def filterMails(rows,fname,chunk=50):
         threads=[]
         rejected=[]
         accepted=[]
-        chunk=len(rows)//max_threads
         for i in range(0,len(rows),chunk):
                 try:
                         t=emailFilter(i//chunk+1,rows, i, i+chunk)
@@ -80,8 +80,7 @@ def filterMails(rows,fname,max_threads=10):
                        logging.exception("failed to start thread id %d"%(i))
         print("Total %d threads are running"%len(threads))
 
-
-
+        
         for t in threads:
             t.join()
             rejected+=t.getRejected()
@@ -89,5 +88,19 @@ def filterMails(rows,fname,max_threads=10):
         print("Total Rejected: %s Total Accepted: %s"%(len(rejected),len(accepted)))
         open('rejected_from_%s.txt'%fname,'w').write(','.join(rejected))
 
-                
-                        
+        #This will help us to judge about the accuracy of emails in a better way
+
+        with open('email%s.csv'%fname,'w') as f:
+                fieldnames=['Accepted_mails','Rejected_mails']
+                writer = csv.DictWriter(f,fieldnames=fieldnames,dialect=csv.excel)
+
+                writer.writeheader()
+
+                for accept in accepted:
+                    writer.writerow({fieldnames[0]:accept})
+                for reject in rejected:
+                    writer.writerow({fieldnames[1]:reject})
+                ##later on we can specially look into those email ids which did not responded
+
+                f.close()
+                #print "Done"
