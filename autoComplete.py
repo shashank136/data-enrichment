@@ -259,10 +259,10 @@ class AutoComplete():
         self.rows = rows_data
         self._autoComplete()
         self._updateAddress()
-        self._addLocationPhoto()
-        self._addRatingsReviews()
+        #self._addLocationPhoto()
+        #self._addRatingsReviews()
         self._googleUpdates()
-        self._formatWorkinghours()
+        #self._formatWorkinghours()
         # Dictionary self.json_objects is large
         # This should be released before the next file is opened as the current object won't go out of scope.
         # So _releaseMemory() should be the last function to run. Place other functions before this.
@@ -433,7 +433,7 @@ class AutoComplete():
                 try:
                     if resp['permanently_closed']:
                         row['perma_closed']='true'
-                        row['Services Offered'] = "Permanently Closed"
+                        row['Name']=row['Name']+' [Address Unverified]'
                         print "Permanently closed is ",row['Name']
                 except:
                     pass
