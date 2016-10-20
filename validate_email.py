@@ -75,6 +75,7 @@ def filterMails(rows,fname,max_threads=10):
         threads=[]
         rejected=[]
         accepted=[]
+        missed=[]
         chunk=len(rows)//max_threads
         for i in range(0,len(rows),chunk):
                 try:
@@ -91,6 +92,8 @@ def filterMails(rows,fname,max_threads=10):
             t.join()
             rejected+=t.getRejected()
             accepted+=t.getAccepted()
+            missed+=t.getMissed()
+
         print("Total Rejected: %s Total Accepted: %s Total Missed: %s"%(len(rejected),len(accepted),len(missed)))
         #open('rejected_from_%s.txt'%fname,'w').write(','.join(rejected))
 
