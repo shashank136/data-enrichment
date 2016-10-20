@@ -88,10 +88,10 @@ def filterMails(rows,fname,max_threads=10):
             rejected+=t.getRejected()
             accepted+=t.getAccepted()
         print("Total Rejected: %s Total Accepted: %s"%(len(rejected),len(accepted)))
-        open('rejected_from_%s.txt'%fname,'w').write(','.join(rejected))
+        #open('rejected_from_%s.txt'%fname,'w').write(','.join(rejected))
 
-        with open('email%s.csv'%fname,'w') as f:
-                fieldnames=['Accepted_mails','Rejected_mails']
+        with open('email.csv','a') as f:
+                fieldnames=['Accepted_mails','Rejected_mails','%s'%fname]
                 writer = csv.DictWriter(f,fieldnames=fieldnames,dialect=csv.excel)
 
                 writer.writeheader()
