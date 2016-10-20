@@ -2,7 +2,7 @@
 from facepy import GraphAPI
 import logging
 import sys
-import glob,csv
+import glob,csv,json
 from random import randint
 
 KEYS_FB=['1040517959329660|c7e458dd968fca33d05a18fddbcd86ab',   #Rohit
@@ -341,7 +341,108 @@ class processGraph:
 
     def _addViews(self,row):
         row['Total Views']+=self.viewFactor*randint(100,200)
-        
+
+    def _nodePhotos(self,row,node):
+        if 'id' not in node:
+            return
+        photos = []
+        after = ''
+        while True:
+            resp = self.graph.get(node['id']+'/photos?type=uploaded&fields=source&limit=50&after=%s'%after)
+            if 'data' in resp:
+                for i in resp['data']:
+                    photos.append(i['source'])
+            if 'paging' in resp:
+                after = resp['paging']['cursors']['after']
+                if 'next' not in resp['paging']:
+                    break
+            else:
+                break
+            # TO GUARANTEE QUICK TERMINATION
+            if len(photos) >= 100:
+                break
+
+        row_data = ''
+        for photo in photos:
+            if row_data:
+                row_data += ','+ photo
+            else:
+                row_data = photo
+        row['fb_photos'] = row_data
+
+    def _nodeVideos(self,row,node):
+        if 'id' not in node:
+            return
+        videos = []
+        after = ''
+        while True:
+            resp = self.graph.get(node['id']+'/videos?type=uploaded&fields=source,title,description&limit=50&after=%s'%after)
+            if 'data' in resp:
+                for i in resp['data']:
+                    videos.append(i)
+            if 'paging' in resp:
+                after = resp['paging']['cursors']['after']
+                if 'next' not in resp['paging']:
+                    break
+            else:
+                break
+            # TO GUARANTEE QUICK TERMINATION
+            if len(videos) >= 100:
+                break
+
+        row_data = ''
+        for video in videos:
+            x = ''
+            if 'title' in video:
+                x = "{'title':'%s','link':'%s'}"%(video['title'].encode('ascii','ignore'),video['source'])
+            elif 'description' in video:
+                x = "{'title':'%s','link':'%s'}"%(video['description'].encode('ascii','ignore'),video['source'])
+            else:
+                x = "{'title':'%s','link':'%s'}"%('',video['source'])
+
+            if row_data:
+                row_data += ','+ x
+            else:
+                row_data = x
+        row['fb_videos'] = row_data
+
+    def _nodeWorkingHours(self,row,node):
+        if 'id' not in node:
+            return
+        resp = self.graph.get(node['id']+'?fields=hours')
+        row_data = ''
+        if 'hours' in resp:
+            row_data = json.dumps(resp['hours'])
+        row['fb_workingHours'] = row_data
+
+    def _nodePosts(self,row,node):
+        if 'id' not in node:
+            return
+        posts = []
+        after = ''
+        while True:
+            resp = self.graph.get(node['id']+'/posts?fields=message,type,created_time&limit=90&next=%s'%after)
+            if 'data' in resp:
+                for i in resp['data']:
+                    if i['type'] == 'status' and 'message' in i:
+                        posts.append(i)
+            if 'paging' in resp:
+                after = resp['paging']['next']
+            else:
+                break
+            # TO GUARANTEE QUICK TERMINATION
+            if len(posts) >= 10:
+                break
+
+        row_data = ''
+        for post in posts:
+            x = "{'created_time':'%s','message':'%s'}"%(post['created_time'],post['message'].encode('ascii','ignore'))
+            if row_data:
+                row_data += ','+ x
+            else:
+                row_data = x
+        row['fb_posts'] = row_data
+
     def processAll(self,rows):
         details,link,cover,website,pincode,street,dp,verified,phone,email=0,0,0,0,0,0,0,0,0,0 #stats
         total = len(rows)
@@ -362,6 +463,12 @@ class processGraph:
                 email += self._addEmails(row,node)
                 verified += self._isVerified(row,node)
                 self._addViews(row)
+
+                self._nodePosts(row,node)
+                self._nodeVideos(row,node)
+                self._nodePhotos(row,node)
+                self._nodeWorkingHours(row,node)
+
                 pro=int((float(progress)/total)*100)
                 sys.stdout.write("\r%d%%"%pro)
                 sys.stdout.flush()

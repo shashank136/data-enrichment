@@ -59,7 +59,7 @@ class geocoderTest():
             self.rows = []
             self.FIELDS = []
             fileBaseName = os.path.splitext(os.path.basename(fileName))[0]
-            self._readCSV(fileName)            
+            self._readCSV(fileName)
             self._removeThumbs()
             print "\nCurrent file is",fileName,"\n"
             self.autoComp.main(self.rows)
@@ -89,9 +89,9 @@ class geocoderTest():
 
         reader.fieldnames.extend(["Mail2", "listing_locations", "featured_image", "location_image", "fullAddress", "lat", "lng","viewport","prec_loc"]);
         reader.fieldnames.extend(["rating","reviews","author","Total Views","avg_rating","place_details", "fb_page", "fb_verified"]);
-        reader.fieldnames.extend(['autocomplete_precise_address','place_id','perma_closed','Mobiles','wikipedia'])
+        reader.fieldnames.extend(['autocomplete_precise_address','place_id','perma_closed','Mobiles','wikipedia','fb_posts','fb_photos','fb_videos','fb_workingHours'])
         self.FIELDS = reader.fieldnames;
-        self.rows.extend(reader); 
+        self.rows.extend(reader);
         #self.rows=self.new_rows
         inputFile.close();
 
