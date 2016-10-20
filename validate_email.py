@@ -15,6 +15,7 @@ class emailFilter(threading.Thread):
                 self.id=ThreadID
                 self.rejected=[]
                 self.accepted=[]
+                self.missed=[]
 
                
         def validate_email(self,email):
@@ -49,6 +50,7 @@ class emailFilter(threading.Thread):
                         logging.exception("This error is not a problem, email: %s"%(email))
 ##                        print("%s was deemed to be accepted in thread %s"%(email,self.id))
                         self.accepted.append(email)
+                        self.missed.append(email)
                         return True
 
         def run(self):
@@ -65,6 +67,8 @@ class emailFilter(threading.Thread):
         
         def getAccepted(self):
                 return self.accepted
+        def getMissed(self):
+                return self.missed
 
 
 def filterMails(rows,fname,max_threads=10):
@@ -87,8 +91,8 @@ def filterMails(rows,fname,max_threads=10):
             t.join()
             rejected+=t.getRejected()
             accepted+=t.getAccepted()
-        print("Total Rejected: %s Total Accepted: %s"%(len(rejected),len(accepted)))
-        open('rejected_from_%s.txt'%fname,'w').write(','.join(rejected))
+        print("Total Rejected: %s Total Accepted: %s Total Missed: %s"%(len(rejected),len(accepted),len(missed)))
+        #open('rejected_from_%s.txt'%fname,'w').write(','.join(rejected))
 
         with open('email.csv','a') as f:
                 fieldnames=['Accepted_mails','Rejected_mails','%s'%fname]
