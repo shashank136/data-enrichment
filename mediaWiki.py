@@ -94,7 +94,7 @@ class mediaWiki:
             if page:
                 pg+=1
                 images = filter(lambda x: not x.endswith('svg'),page.images)
-                row['Details'] +=unicode(page.title)+'\n'+unicode(page.summary)+'\n'+unicode(page.content)
+                row['Details'] +=(unicode(page.title)+'\n'+unicode(page.summary)+'\n'+unicode(page.content)).replace(',','#')
                 row['Images URL']+=','.join(images)
             
 ##            sys.stdout.flush()
