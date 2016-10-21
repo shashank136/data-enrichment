@@ -121,9 +121,9 @@ class processMobile:
                     if cleaned_no[0:2]=='91':
                         cleaned_no=cleaned_no[2:]
                     mobiles.append(cleaned_no)
-            pro=int((float(progress)/total)*100)
-            sys.stdout.write("\r%d%%"%pro)
-            sys.stdout.flush()
+##            pro=int((float(progress)/total)*100) #Avoiding bad characters in log file
+##            sys.stdout.write("\r%d%%"%pro)
+##            sys.stdout.flush()
             row['Mobiles'] = ', '.join(list(set(mobiles)))
             #print(row['Mobiles'])
             

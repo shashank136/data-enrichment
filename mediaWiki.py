@@ -11,34 +11,62 @@ class mediaWiki:
     def __init__(self):
         pass
 
+    def explode(self,string):
+        string=string.lower()
+        separators=[' ',',','.','/','-']
+        split=[]
+        new=False
+        tmp=""
+        for i in string+".":
+            if i in separators:
+                new = True
+                continue
+            elif new:
+                split.append(tmp)
+                tmp = ""
+                new = False
+            tmp+=i
+        if tmp:
+            split.append(tmp)
+
+        split = filter(lambda x: not x in ['institute','college','university','classes','class','of','&','and','at'],split)
+        return set(split)
+      
     def getPage(self,row):
-        name=row['Name'].lower()
-        tokens = set(name.split())
+        name=unicode(row['Name'])
+        city=unicode(row['City'])
+        tokens = self.explode(name)
+        l=len(tokens)
         try:
-            return wikipedia.page(name)
+            page = wikipedia.page(name)
+            if city in page.summary.lower():
+                return page
         except:
             pass
         
-        results = wikipedia.search(name+" "+row['City'],results=5)
+        results, suggestion = wikipedia.search(name+" "+city,results=5,suggestion=True)
         if not results: return None
+        results= map(lambda x : x.lower(),results)
         weights = [0 for i in results]
         
         for n,i in enumerate(results):
             #print("Similar suggestion for %s:%s"%(name,i))
-            if  row['City'] in i:
-                weights[n]+=0.3
-            tokens = name.split()
-            l=len(tokens)
+            if  city in i:
+                weights[n]+=0.6
             for j in tokens:
-                weights[n]+=1/l
+                if j in i:
+                    weights[n]+=1.0/l
             if 'india' in i.lower():
-                weights[n]+=0.2
+                weights[n]+=0.3
                 
         m=max(weights)
-        if m>=1:
-            r = results[weights.index(m)]
-            print "Max weight guess for %s :%s"%(name,r)
-            return wikipedia.page(r)  
+        i=weights.index(m)
+        if m>=1.2 or i==0 and m>1:
+            #print "Max weight guess for %s :%s"%(name,results[i])
+            page = wikipedia.page(results[i])
+            if row['City'] in page.summary.lower():
+                return page
+
 
 ##        
 ##        if not page:
@@ -55,21 +83,22 @@ class mediaWiki:
 ##                    if row['City'] in tmp.summary:
 ##                        print "Accepted page from suggestions: %s"%page.title
 ##                        page=tmp
-
         return None
 
     def processAll(self,rows):
         pg=0
         total=len(rows)
+        print("Adding wikipedia data, this may take time")
         for progress,row in enumerate(rows):
             page = self.getPage(row)
             if page:
                 pg+=1
                 images = filter(lambda x: not x.endswith('svg'),page.images)
-                row['wikipedia']=serialize({'page_title':UTF8(page.title), 'images':UTF8(images),'summary':UTF8(page.summary),'content':UTF8(page.content)})
+                row['Details'] +=unicode(page.title)+'\n'+unicode(page.summary)+'\n'+unicode(page.content)
+                row['Images URL']+=','.join(images)
             
-            sys.stdout.flush()
-            sys.stdout.write("\r%d%%"%int((float(progress)/total)*100))
+##            sys.stdout.flush()
+##            sys.stdout.write("\r%d%%"%int((float(progress)/total)*100))
             
                 
         print("Pages found on wikipedis : %d/%d"%(pg,len(rows)))

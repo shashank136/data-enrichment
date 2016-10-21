@@ -47,7 +47,7 @@ class emailFilter(threading.Thread):
                         self.accepted.append(email)
                         return True
                 except:
-                        logging.exception("This error is not a problem, email: %s"%(email))
+                        #logging.exception("This error is not a problem, email: %s"%(email))
 ##                        print("%s was deemed to be accepted in thread %s"%(email,self.id))
                         self.accepted.append(email)
                         self.missed.append(email)
@@ -76,7 +76,7 @@ def filterMails(rows,fname,max_threads=10):
         rejected=[]
         accepted=[]
         missed=[]
-        chunk=len(rows)//max_threads
+        chunk= max(len(rows)//max_threads,1)
         for i in range(0,len(rows),chunk):
                 try:
                         t=emailFilter(i//chunk+1,rows, i, i+chunk)

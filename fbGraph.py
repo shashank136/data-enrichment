@@ -450,6 +450,8 @@ class processGraph:
         print('STATE : ',state);
         print("Fetching info from FB Graph")
         for progress,row in enumerate(rows):
+            row['Name'] = unicode(row['Name'])
+            row['Locality'] = unicode(row['Locality'])
             try:
                 node = self.searchPlace(row,state)
                 details += self._repairDetails(row,node)
@@ -469,11 +471,11 @@ class processGraph:
                 self._nodePhotos(row,node)
                 self._nodeWorkingHours(row,node)
 
-                pro=int((float(progress)/total)*100)
-                sys.stdout.write("\r%d%%"%pro)
-                sys.stdout.flush()
+##                pro=int((float(progress)/total)*100) # Comment out to avoid Bad characters in logs
+##                sys.stdout.write("\r%d%%"%pro)
+##                sys.stdout.flush()
             except:
                logging.exception("Error loading information from facebook for " + row['Name'])
-        sys.stdout.write("\r100%")
-        sys.stdout.flush()
+##        sys.stdout.write("\r100%")
+##        sys.stdout.flush()
         print("\nNew Info Added from Facebook\nDetails:%d Facebook Link:%d Cover:%d \nWebsite:%d Pincode:%d Address:%d Images:%d Verified %d/%d Phone:%d Emails:%d"%(details,link,cover,website,pincode,street,dp,verified,link,phone,email));
