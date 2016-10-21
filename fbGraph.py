@@ -17,6 +17,14 @@ def UTF8(data):
     except:
         return data
 
+# SAFE DECODING ENCODING
+def safe_dec_enc(data):
+    if data:
+        # BECAUSE DATA IS NOT GUARANTEED TO BE UTF-8 ENCODED
+        return data.decode('utf-8','ignore').encode('utf-8')
+    # For NoneTypes
+    return ''
+
 class processGraph:
     def __init__(self, key=None):
         global key_index
@@ -200,6 +208,10 @@ class processGraph:
         return dict()
 
     def searchPlace(self,row,state):
+        ################
+        row['Name'] = safe_dec_enc(row['Name'])
+        row['Locality'] = safe_dec_enc(row['Locality'])
+        ################
         self.viewFactor=0
         query = row['Name']
         node = self.analyze_prediction(row,query,False)
@@ -450,8 +462,6 @@ class processGraph:
         print('STATE : ',state);
         print("Fetching info from FB Graph")
         for progress,row in enumerate(rows):
-            row['Name'] = unicode(row['Name'])
-            row['Locality'] = unicode(row['Locality'])
             try:
                 node = self.searchPlace(row,state)
                 details += self._repairDetails(row,node)
