@@ -18,6 +18,7 @@ from facepy import GraphAPI
 from autoComplete import AutoComplete
 from fbGraph import processGraph,UTF8
 from mediaWiki import mediaWiki
+from validate_email import filterMails
 
 
 KEYS = [
@@ -67,6 +68,7 @@ class geocoderTest():
             self.fbGraph.processAll(self.rows)
             self._addFeaturedImage()
             self.mobiles.processAll(self.rows)
+            self.filterMails(self.rows,fileBaseName)
             self.wikipedia.processAll(self.rows)
             '''
             added patternmatcher
