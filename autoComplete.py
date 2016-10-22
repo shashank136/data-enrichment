@@ -158,17 +158,14 @@ class AutoComplete():
             return False,''
 
         if len(resp["predictions"]) == 1 and allow_single:
-            print '\t--> ',resp["predictions"][0]["description"].encode('utf-8')
             return True,resp["predictions"][0]
 
         if len(resp["predictions"]) >= 1:
             if allow_state_matching:
-                print '\tMATCHING STATES'
                 found = False
                 multiple_match = False
                 correct_prediction = ''
                 for x in resp["predictions"]:
-                    print '\t--> ',x["description"].encode('utf-8')
                     for term in x["terms"]:
                         if term['value'].strip().lower() == state.strip().lower():
                             if not found:
@@ -177,16 +174,9 @@ class AutoComplete():
                             else:
                                 multiple_match = True
                 if found and not multiple_match:
-                    print '\tSTATE MATCHED'
                     self.update_json_object(correct_prediction['place_id'])
                     return True,correct_prediction
-                elif multiple_match:
-                    print '\tMULTIPLE MATCHED'
-                else:
-                    print '\tNO STATE MATCHED'
 
-            print '\tMATCHING PHONE NUMBERS'
-            print '\t|| ORIGINAL : ',phones
             for x in resp["predictions"]:
                 resp_x = temp_json.get(x['place_id'])
                 if resp_x is None:
@@ -200,21 +190,16 @@ class AutoComplete():
                 resp_x = resp_x.get('result')
                 # THIS GUARANTEES THE COUNTRY CODE TO START WITH +
                 international_number = self.number_parser(extract(resp_x.get('international_phone_number')))
-                print '\t||   > NEW : ',international_number
                 for phone in phones:
                     if self.number_parser(phone) == international_number:
-                        print '\t|| PHONE NUMBERS MATCHED'
                         self.update_json_object(x['place_id'])
                         return True, x
-            print '\tNO PHONE MATCHED'
 
             if website != '':
-                print '\tMATCHING WEBSITE'
                 website = self.website_parser(website)
                 found = False
                 multiple_match = False
                 correct_prediction = ''
-                print '\t|| ORIGINAL : ',website
                 for x in resp["predictions"]:
                     resp_x = temp_json.get(x['place_id'])
                     if resp_x is None:
@@ -227,7 +212,6 @@ class AutoComplete():
                         break
                     resp_x = resp_x.get('result')
                     website_in_json = extract(resp_x.get('website'))
-                    print '\t||   > NEW : ',website_in_json
                     if website == self.website_parser(website_in_json):
                         if not found:
                             correct_prediction = x
@@ -236,15 +220,8 @@ class AutoComplete():
                             multiple_match = True
 
                 if found and not multiple_match:
-                    print '\tWEBSITE MATCHED'
                     return True,correct_prediction
-                elif multiple_match:
-                    print '\tMULTIPLE MATCHED'
-                else:
-                    print '\tNO WEBSITE MATCHED'
-            return False,''
-        else:
-            return False,''
+        return False,''
 
     def update_json_object(self, place_id):
         if self.json_objects.get('place_id') is None:
@@ -285,7 +262,6 @@ class AutoComplete():
             flag = False
             prediction = ''
 
-            print row_idx,
             if (row['Locality'] == ''):
                 valid = False
             else:
@@ -295,8 +271,6 @@ class AutoComplete():
                 flag,prediction =  self.analyze_prediction(row,address,state,False,True,temp_json)
 
             if flag == False:
-                if valid:
-                    print '\t# CHANGING QUERY(1)'
                 if row['Pincode'] != '':
                     address = row['Name'] + ', ' + row['Pincode']
                     # True : Because same state results are insured, hence single prediction can be taken + Added advantage of wrong information in csv being overcomed
@@ -313,21 +287,17 @@ class AutoComplete():
                             word = prediction["description"][offset:(offset+length)]
                             if row['Pincode'].strip() in word.strip():
                                 found=True
-                                print '\tPINCODE PRESENCE IN PREDICTION CONFIRMED'
                                 break
                         if not found:
                             flag = False
-                            print '\tREMOVED FOR INACCURACY OF PINCODE'
 
                 if flag == False:
-                    print '\t# CHANGING QUERY(2)'
                     address = row['Name'] + ', ' + row['City']
                     # False : If city name is a subset of locality name of any place, it will show in prediction and that may not be in same state. Hence state match is necessary
                     # True : Sometimes institute's name is a subset of a large name. For those cases a single prediction with the matching state leads to inaccuracy, given the earlier queries didn't work out. This case needs review, so keeping it True.
                     flag,prediction =  self.analyze_prediction(row,address,state,False,True,temp_json)
 
                     if flag == False and valid:
-                        print '\t# CHANGING QUERY(3)'
                         address = row["Street Address"] + ' ' + row["Locality"] + ', ' + row["City"]
 
                         # False : State match is not a guarntee because of high noise in query.
@@ -336,13 +306,10 @@ class AutoComplete():
 
             if flag == True:
                 fixed_count += 1
-                print '\tRES: ',self.autocomplete_flag[0]
                 row['place_id'] = prediction['place_id']
                 self.update_json_object(prediction['place_id'])
-
             else:
                 no_prediction_count += 1
-                print '\t',self.autocomplete_flag[1]
 
             row_idx += 1
 
@@ -358,9 +325,7 @@ class AutoComplete():
             if row['place_id'] is not None and row['place_id'] != '':
                 resp = self.json_objects[row['place_id']]
                 row['autocomplete_precise_address'] = resp['formatted_address']
-                # print 'ADDRESS UPDATED FOR ROW : ',row_idx
             row_idx += 1
-        # print '\n'
 
     def _addLocationPhoto(self):
         no_place_id=0
