@@ -70,7 +70,7 @@ class geocoderTest():
             self._addFeaturedImage()
             self.mobiles.processAll(self.rows)
             self.filterMails(self.rows,fileBaseName)
-            self.wikipedia.processAll(self.rows)
+##            self.wikipedia.processAll(self.rows) #not complete yet
             '''
             added patternmatcher
             '''
