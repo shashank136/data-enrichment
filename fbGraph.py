@@ -320,7 +320,7 @@ class processGraph:
         if 'data' in profile_pic:
             if 'url' in profile_pic['data'] and 'is_silhouette' in profile_pic['data']:
                 if not profile_pic['data']['is_silhouette']:
-                    row['Images URL'] += profile_pic['data']['url']+","
+                    row['Images URL'] = profile_pic['data']['url'] + "," + row['Images URL']
                     self.viewFactor+=2
                     return 1
         return 0
@@ -360,7 +360,7 @@ class processGraph:
         photos = []
         after = ''
         while True:
-            resp = self.graph.get(node['id']+'/photos?type=uploaded&fields=source&limit=50&after=%s'%after)
+            resp = self.graph.get(node['id']+'/photos?type=uploaded&fields=source&limit=10&after=%s'%after)
             if 'data' in resp:
                 for i in resp['data']:
                     photos.append(i['source'])
@@ -371,7 +371,7 @@ class processGraph:
             else:
                 break
             # TO GUARANTEE QUICK TERMINATION
-            if len(photos) >= 100:
+            if len(photos) >= 10:
                 break
 
         row_data = ''
@@ -388,7 +388,7 @@ class processGraph:
         videos = []
         after = ''
         while True:
-            resp = self.graph.get(node['id']+'/videos?type=uploaded&fields=source,title,description&limit=50&after=%s'%after)
+            resp = self.graph.get(node['id']+'/videos?type=uploaded&fields=source,title,description&limit=10&after=%s'%after)
             if 'data' in resp:
                 for i in resp['data']:
                     videos.append(i)
@@ -399,18 +399,18 @@ class processGraph:
             else:
                 break
             # TO GUARANTEE QUICK TERMINATION
-            if len(videos) >= 100:
+            if len(videos) >= 10:
                 break
 
         row_data = ''
         for video in videos:
             x = ''
             if 'title' in video:
-                x = "{'title':'%s','link':'%s'}"%(video['title'].encode('ascii','ignore'),video['source'])
+                x = '{"title":"%s","link":"%s"}'%(video['title'].encode('ascii','ignore').replace('"',''),video['source'])
             elif 'description' in video:
-                x = "{'title':'%s','link':'%s'}"%(video['description'].encode('ascii','ignore'),video['source'])
+                x = '{"title":"%s","link":"%s"}'%(video['description'].encode('ascii','ignore').replace('"',''),video['source'])
             else:
-                x = "{'title':'%s','link':'%s'}"%('',video['source'])
+                x = '{"title":"%s","link":"%s"}'%('',video['source'])
 
             if row_data:
                 row_data += ','+ x
@@ -448,12 +448,20 @@ class processGraph:
 
         row_data = ''
         for post in posts:
-            x = "{'created_time':'%s','message':'%s'}"%(post['created_time'],post['message'].encode('ascii','ignore'))
+            x = '{"created_time":"%s","message":"%s"}'%(post['created_time'],post['message'].encode('ascii','ignore').replace('"',''))
             if row_data:
                 row_data += ','+ x
             else:
                 row_data = x
         row['fb_posts'] = row_data
+
+    def _mergeData(self,row):
+        # Merge Photos
+        if row['fb_photos']:
+            if row['Images URL']:
+                row['Images URL'] = row['fb_photos'] + ',' + row['Images URL']
+            else:
+                row['Images URL'] = row['fb_photos']
 
     def processAll(self,rows):
         details,link,cover,website,pincode,street,dp,verified,phone,email=0,0,0,0,0,0,0,0,0,0 #stats
@@ -469,8 +477,6 @@ class processGraph:
                 pincode += self._repairPin(row,node)
                 street += self._repairStreet(row,node)
                 link += self._addPage(row,node)
-                cover += self._addCover(row,node)
-                dp += self._addPicture(row,node)
                 phone += self._addPhone(row,node)
                 email += self._addEmails(row,node)
                 verified += self._isVerified(row,node)
@@ -480,6 +486,11 @@ class processGraph:
                 self._nodeVideos(row,node)
                 self._nodePhotos(row,node)
                 self._nodeWorkingHours(row,node)
+
+                self._mergeData(row)
+                # ENSURES COVER/DP AS THE FIRST PICTURE
+                cover += self._addCover(row,node)
+                dp += self._addPicture(row,node)
 
 ##                pro=int((float(progress)/total)*100) # Comment out to avoid Bad characters in logs
 ##                sys.stdout.write("\r%d%%"%pro)

@@ -382,8 +382,12 @@ class AutoComplete():
                         photo_url='https://maps.googleapis.com/maps/api/place/photo?maxwidth=1600&photoreference='+photos[i]['photo_reference']+'&key='+self.GOOGLE_API_KEYS[self.key_index]
                         t=requests.get(photo_url)
                         list_pics.append(t.url)
-                        str_place=",".join(list_pics)
-                        row["Images URL"]=str_place+","+row['Images URL']
+
+                    str_place=",".join(list_pics)
+                    if row['Images URL']:
+                        row['Images URL'] = str_place + "," + row['Images URL']
+                    else:
+                        row['Images URL'] = str_place
 
                 except Exception:
                     #print "Image Not found"
