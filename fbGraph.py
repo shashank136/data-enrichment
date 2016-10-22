@@ -4,6 +4,7 @@ import logging
 import sys
 import glob,csv,json
 from random import randint
+import parseFBWorkHours
 
 KEYS_FB=['1040517959329660|c7e458dd968fca33d05a18fddbcd86ab',   #Rohit
          '1697721727215546|a372f9c8b412e8b053094042fc4b42e6',   #Shantanu
@@ -352,7 +353,10 @@ class processGraph:
         print("New Info Added from Facebook\n%s:%d"%(stat));
 
     def _addViews(self,row):
-        row['Total Views']+=self.viewFactor*randint(100,200)
+        if row['Total Views']:
+            row['Total Views']+=self.viewFactor*randint(100,200)
+        else:
+            row['Total Views']=self.viewFactor*randint(100,200)
 
     def _nodePhotos(self,row,node):
         if 'id' not in node:
@@ -424,7 +428,11 @@ class processGraph:
         resp = self.graph.get(node['id']+'?fields=hours')
         row_data = ''
         if 'hours' in resp:
-            row_data = json.dumps(resp['hours'])
+            try:
+                row_data = parseFBWorkHours.parse(resp['hours'])
+            except:
+                logging.exception("Error parsing Working Hours for" + row['Name'])
+                
         row['fb_workingHours'] = row_data
 
     def _nodePosts(self,row,node):
@@ -462,6 +470,9 @@ class processGraph:
                 row['Images URL'] = row['fb_photos'] + ',' + row['Images URL']
             else:
                 row['Images URL'] = row['fb_photos']
+
+        if not row['Working Hours'] and row['fb_workingHours']:
+            row['Working Hours'] = row['fb_workingHours']
 
     def processAll(self,rows):
         details,link,cover,website,pincode,street,dp,verified,phone,email=0,0,0,0,0,0,0,0,0,0 #stats
