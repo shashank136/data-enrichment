@@ -19,6 +19,7 @@ from autoComplete import AutoComplete
 from fbGraph import processGraph,UTF8
 from mediaWiki import mediaWiki
 from validate_email import filterMails
+from removeDuplicates import removeDuplicates 
 
 
 KEYS = [
@@ -52,6 +53,7 @@ class geocoderTest():
         self.fbGraph =  processGraph(key=None)
         self.mobiles = processMobile()
         self.wikipedia = mediaWiki()
+        self.removeDuplicates = removeDuplicates()
 
     def process(self):
         fileNames = glob.glob('./input/*.csv');
@@ -62,6 +64,7 @@ class geocoderTest():
             self.FIELDS = []
             fileBaseName = os.path.splitext(os.path.basename(fileName))[0]
             self._readCSV(fileName)
+            self.removeDuplicates.processAll(self.rows)
             self._removeThumbs()
             print "\nCurrent file is",fileName,"\n"
             self.autoComp.main(self.rows)
@@ -69,7 +72,7 @@ class geocoderTest():
             self.fbGraph.processAll(self.rows)
             self._addFeaturedImage()
             self.mobiles.processAll(self.rows)
-            self.filterMails(self.rows,fileBaseName)
+            self.filterMails(self.rows,fileBaseName)            
 ##            self.wikipedia.processAll(self.rows) #not complete yet
             '''
             added patternmatcher
