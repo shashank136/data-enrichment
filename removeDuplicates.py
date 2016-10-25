@@ -1,7 +1,6 @@
 import logging
 
 class removeDuplicates:
-
     def __init__(self):
         self.main_fields = ['Name','Street Address','Locality','City','Pincode']
 
@@ -13,9 +12,7 @@ class removeDuplicates:
                 groups[hsh].append(row)
             else:
                 groups[hsh] = [row]
-
         return groups
-
 
     def processAll(self,rows):
         self.rows = rows
@@ -30,21 +27,17 @@ class removeDuplicates:
         print "Final size of records"+str(len(self.rows))
         print "Total meregers: "+str(mergers)
 
-
     def rhash(self,row):
-
         k=""
         for i in self.main_fields:
             k+=str(row.get(i)).lower().strip()
-
         return hash(k)
-
 
     def mergeRow(self,group):
         multiFields = [['Phone1','Phone2','Phone3','Phone4','Phone5'],['Mail','Mail2']]
         row1 = group.pop(0)
         comm_id = int(row1['EduID'])
-        pos=1
+        pos=0
         while pos<len(group):
             row2 = group[pos]
             pos+=1
@@ -58,7 +51,6 @@ class removeDuplicates:
                         row1[i] = self.mergeField(row1[i],row2[i])
 ##                    print [row2[i] for i in self.main_fields]
 ##                    print("=>"+row1[i])
-
             self.rows.remove(row2)
         row1['EduID'] = str(comm_id)
 
@@ -73,11 +65,6 @@ class removeDuplicates:
                     break
                 row1[i] = fields[n]
 ##                print i,row1[i]
-
-
-
-
-
 
     def mergeField(self,r1,r2):
         if r1:
