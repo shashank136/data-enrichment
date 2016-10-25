@@ -137,20 +137,13 @@ class AutoComplete():
         address = address.replace('#','')
         extract = lambda x:'' if x is None else x
         phones = []
-        website = ''
-        if row['Phone1'] != '' and row['Phone1'] is not None:
-            phones.append(row['Phone1'])
-        if row['Phone2'] != '' and row['Phone2'] is not None:
-            phones.append(row['Phone2'])
-        if row['Phone3'] != '' and row['Phone3'] is not None:
-            phones.append(row['Phone3'])
-        if row['Phone4'] != '' and row['Phone4'] is not None:
-            phones.append(row['Phone4'])
-        if row['Phone5'] != '' and row['Phone5'] is not None:
-            phones.append(row['Phone5'])
-
+        websites = []
+        
+        for i in range(1,6):
+            if row['Phone'+str(i)]:
+                phones.append(self.number_parser(row['Phone'+str(i)]))
         if row['Website'] != '' and row['Website'] is not None:
-            website = row['Website']
+            websites.extend(row['Website'].split(','))
 
         url = 'https://maps.googleapis.com/maps/api/place/autocomplete/json?input='+address+'&types=establishment&location=0,0&radius=20000000&components=country:IN&key='
         resp = self.graceful_request(url)
@@ -195,32 +188,32 @@ class AutoComplete():
                         self.update_json_object(x['place_id'])
                         return True, x
 
-            if website != '':
-                website = self.website_parser(website)
-                found = False
-                multiple_match = False
-                correct_prediction = ''
-                for x in resp["predictions"]:
-                    resp_x = temp_json.get(x['place_id'])
-                    if resp_x is None:
-                        url='https://maps.googleapis.com/maps/api/place/details/json?placeid='+x['place_id']+'&key='
-                        resp_x = self.graceful_request(url)
-                        temp_json[x['place_id']] = resp_x
+            if websites:
+                for website in websites:
+                    website = self.website_parser(website)
+                    found = False
+                    multiple_match = False
+                    correct_prediction = ''
+                    for x in resp["predictions"]:
+                        resp_x = temp_json.get(x['place_id'])
+                        if resp_x is None:
+                            url='https://maps.googleapis.com/maps/api/place/details/json?placeid='+x['place_id']+'&key='
+                            resp_x = self.graceful_request(url)
+                            temp_json[x['place_id']] = resp_x
 
-                    # To prevent errors when graceful_request() returns 'None'
-                    if resp_x is None:
-                        break
-                    resp_x = resp_x.get('result')
-                    website_in_json = extract(resp_x.get('website'))
-                    if website == self.website_parser(website_in_json):
-                        if not found:
-                            correct_prediction = x
-                            found = True
-                        else:
-                            multiple_match = True
-
-                if found and not multiple_match:
-                    return True,correct_prediction
+                        # To prevent errors when graceful_request() returns 'None'
+                        if resp_x is None:
+                            break
+                        resp_x = resp_x.get('result')
+                        website_in_json = extract(resp_x.get('website'))
+                        if website == self.website_parser(website_in_json):
+                            if not found:
+                                correct_prediction = x
+                                found = True
+                            else:
+                                multiple_match = True
+                    if found and not multiple_match:
+                        return True,correct_prediction
         return False,''
 
     def update_json_object(self, place_id):
