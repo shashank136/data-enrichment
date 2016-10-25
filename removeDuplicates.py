@@ -23,7 +23,7 @@ class removeDuplicates:
             if len(groups[i])>1:
 ##                print "Now merging "+groups[i][0]['Name']+" "+groups[i][1]['Name']
                 self.mergeRow(groups[i])
-                mergers+=len(groups[i])-1
+                mergers+=len(groups[i])
         print "Final size of records"+str(len(self.rows))
         print "Total meregers: "+str(mergers)
 
