@@ -13,9 +13,9 @@ class removeDuplicates:
                 groups[hsh].append(row)
             else:
                 groups[hsh] = [row]
-            
+
         return groups
-        
+
 
     def processAll(self,rows):
         self.rows = rows
@@ -29,34 +29,39 @@ class removeDuplicates:
                 mergers+=len(groups[i])-1
         print "Final size of records"+str(len(self.rows))
         print "Total meregers: "+str(mergers)
-                
+
 
     def rhash(self,row):
-        
+
         k=""
         for i in self.main_fields:
             k+=str(row.get(i)).lower().strip()
-            
+
         return hash(k)
 
 
     def mergeRow(self,group):
         multiFields = [['Phone1','Phone2','Phone3','Phone4','Phone5'],['Mail','Mail2']]
         row1 = group.pop(0)
+        comm_id = int(row1['EduID'])
         pos=1
         while pos<len(group):
             row2 = group[pos]
             pos+=1
-            
+
             for i in row1:
                 if row2[i]:
 ##                    print row1[i]+"  "+row2[i]
-                    row1[i] = self.mergeField(row1[i],row2[i])
+                    if i == 'EduID':
+                        comm_id = min(comm_id,int(row2[i]))
+                    else:
+                        row1[i] = self.mergeField(row1[i],row2[i])
 ##                    print [row2[i] for i in self.main_fields]
 ##                    print("=>"+row1[i])
-                    
+
             self.rows.remove(row2)
-            
+        row1['EduID'] = str(comm_id)
+
         for fld in multiFields:
             fields=[]
             for i in fld:
@@ -68,10 +73,10 @@ class removeDuplicates:
                     break
                 row1[i] = fields[n]
 ##                print i,row1[i]
-        
-            
-            
-        
+
+
+
+
 
 
     def mergeField(self,r1,r2):
@@ -89,4 +94,3 @@ class removeDuplicates:
             if not i in dictionary:
                 field1.append(i)
         return ','.join(field1)
-        
