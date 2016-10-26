@@ -156,16 +156,18 @@ class processGraph:
 
         pin= row['Pincode']
         phones = []
-        website = ''
-        email = ''
+        websites = []
+        emails = []
 
         for i in range(1,6):
             if row['Phone'+str(i)]:
                 phones.append(self.number_parser(row['Phone'+str(i)]))
         if row['Website']:
-            website = self.website_parser(row['Website'])
+            websites.extend(row['Website'].split(','))
         if row['Mail']:
-            email = row['Mail'].strip()
+            emails.append(row['Mail'].strip())
+        if row['Mail2']:
+            emails.append(row['Mail2'].strip())
 
         search_result=self.graph.get("search?q=%s&fields=location,phone,emails,website&type=place&limit=50"%(query))
         for place in search_result['data']:
@@ -180,31 +182,34 @@ class processGraph:
                     node = self.graph.get(place['id']+"?fields=name,location,is_verified,description,phone,link,cover,website,emails")
                     return node
 
-            if 'emails' in place and email:
-                for x in place['emails']:
-                    if x == email:
-                        node = self.graph.get(place['id']+"?fields=name,location,is_verified,description,phone,link,cover,website,emails")
-                        return node
+            for email in emails:
+                if 'emails' in place and email:
+                    for x in place['emails']:
+                        if x == email:
+                            node = self.graph.get(place['id']+"?fields=name,location,is_verified,description,phone,link,cover,website,emails")
+                            return node
 
         # WEBSITE MATCH IS NOT SAFE. HENCE SHOULD BE DONE ONLY IF ABOVE MEASURES FAILS.
         if allow_website_match:
-            match=False
-            multiple_match=False
-            correct_place_id=''
+            for website in websites:
+                website = self.website_parser(website)
+                match=False
+                multiple_match=False
+                correct_place_id=''
 
-            for place in search_result['data']:
-                if 'website' in place and website:
-                    if self.match_website(website,place['website']):
-                        if not match:
-                            correct_place_id=place['id']
-                            match=True
-                        else:
-                            multiple_match=True
-                            break
+                for place in search_result['data']:
+                    if 'website' in place and website:
+                        if self.match_website(website,place['website']):
+                            if not match:
+                                correct_place_id=place['id']
+                                match=True
+                            else:
+                                multiple_match=True
+                                break
 
-            if match and not multiple_match:
-                node = self.graph.get(correct_place_id+"?fields=name,location,is_verified,description,phone,link,cover,website,emails")
-                return node
+                if match and not multiple_match:
+                    node = self.graph.get(correct_place_id+"?fields=name,location,is_verified,description,phone,link,cover,website,emails")
+                    return node
 
         return dict()
 
@@ -432,7 +437,7 @@ class processGraph:
                 row_data = parseFBWorkHours.parse(resp['hours'])
             except:
                 logging.exception("Error parsing Working Hours for" + row['Name'])
-                
+
         row['fb_workingHours'] = row_data
 
     def _nodePosts(self,row,node):
