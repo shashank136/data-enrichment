@@ -2,6 +2,7 @@ import requests
 import json
 from fbGraph import safe_dec_enc
 import sys
+import re
 
 keys = [ ("AC086728331b2e303cda499de8e36e3ba2","2fd8e3dcad09495f4b68ba20eef63344"),
         ]
@@ -70,8 +71,8 @@ class processMobile:
             noslist1=list(set(noslist1))
             #print 'noslist1',noslist1
             for i in range(len(noslist1)):
-                row['Phone'+str((i+1))]=noslist1[i]
-                phn_no_ls+=row['Phone'+str((i+1))]+','
+                # row['Phone'+str((i+1))]=noslist1[i]
+                phn_no_ls+=noslist1[i]+','
             phn_no_ls=phn_no_ls.split(',')
             phn_no_ls=filter(None,phn_no_ls)
 
@@ -82,7 +83,7 @@ class processMobile:
                     n=1
                     if len(phn_no_ls[i])%2==0:
                         n=0
-                    print 'phn no',phn_no_ls[i]
+                    #print 'phn no',phn_no_ls[i]
                     splt_no=phn_no_ls[i][0:-len(phn_no_ls[i])/2+n]+'/'+phn_no_ls[i][-len(phn_no_ls[i])/2+n:]
                     phn_no_ls[i]=splt_no
                     #print 'splt_no',splt_no
@@ -99,11 +100,35 @@ class processMobile:
             noslist=set(noslist)
             noslist=list(noslist)
 
+
+            # print noslist
+            p_col=0
             for i in range(0,len(noslist)):
+                phn_no=''
                 if i==5:
                     break;
                 else:
-                    row['Phone'+str(i+1)]=noslist[i]
+                    add='+91'
+                    phn_no=noslist[i]
+                    if phn_no[0]=='0':
+                        phn_no=add+phn_no[1:]
+                        
+                    elif phn_no[0:2]=='91':
+                        phn_no=add+phn_no[2:]
+                    else:
+                        phn_no=add+phn_no
+
+                    result=self._request(phn_no)
+                    try:
+                        y=result['phone_number']
+                        # row['Phone'+str(p_col+1)]="".join(re.findall(r'\d+',noslist[i]))
+                        row['Phone'+str(p_col+1)]=noslist[i]
+                        
+                        p_col+=1
+                    except:
+                        print "Bad Phone number encountered, Deleted..."
+                    # row['Phone'+str(i+1)]=noslist[i]
+                    
 
     def processAll(self,rows):
         self.checkNo(rows)
