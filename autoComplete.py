@@ -372,7 +372,7 @@ class AutoComplete():
                         if i==(len(reviews)-1):
                             row["rating"]+=str(reviews[i]['rating'])
                             row['author']+=reviews[i]['author_name'].encode('utf-8')
-                            row['reviews']+=reviews[i]['text'].encode('utf-8').replace(",","&#44")
+                            row['reviews']+=reviews[i]['text'].encode('utf-8').replace(",","&#44;")
                         else:
                             row["rating"]+=str(reviews[i]['rating'])+","
                             row['author']+=reviews[i]['author_name'].encode('utf-8')+","
