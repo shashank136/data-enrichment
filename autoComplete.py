@@ -138,12 +138,14 @@ class AutoComplete():
         extract = lambda x:'' if x is None else x
         phones = []
         websites = []
-        
+
         for i in range(1,6):
             if row['Phone'+str(i)]:
                 phones.append(self.number_parser(row['Phone'+str(i)]))
-        if row['Website'] != '' and row['Website'] is not None:
-            websites.extend(row['Website'].split(','))
+        if row['Website']:
+            websites.append(row['Website'].strip())
+        if row['Website2']:
+            websites.append(row['Website2'].strip())
 
         url = 'https://maps.googleapis.com/maps/api/place/autocomplete/json?input='+address+'&types=establishment&location=0,0&radius=20000000&components=country:IN&key='
         resp = self.graceful_request(url)
@@ -188,32 +190,31 @@ class AutoComplete():
                         self.update_json_object(x['place_id'])
                         return True, x
 
-            if websites:
-                for website in websites:
-                    website = self.website_parser(website)
-                    found = False
-                    multiple_match = False
-                    correct_prediction = ''
-                    for x in resp["predictions"]:
-                        resp_x = temp_json.get(x['place_id'])
-                        if resp_x is None:
-                            url='https://maps.googleapis.com/maps/api/place/details/json?placeid='+x['place_id']+'&key='
-                            resp_x = self.graceful_request(url)
-                            temp_json[x['place_id']] = resp_x
+            for website in websites:
+                website = self.website_parser(website)
+                found = False
+                multiple_match = False
+                correct_prediction = ''
+                for x in resp["predictions"]:
+                    resp_x = temp_json.get(x['place_id'])
+                    if resp_x is None:
+                        url='https://maps.googleapis.com/maps/api/place/details/json?placeid='+x['place_id']+'&key='
+                        resp_x = self.graceful_request(url)
+                        temp_json[x['place_id']] = resp_x
 
-                        # To prevent errors when graceful_request() returns 'None'
-                        if resp_x is None:
-                            break
-                        resp_x = resp_x.get('result')
-                        website_in_json = extract(resp_x.get('website'))
-                        if website == self.website_parser(website_in_json):
-                            if not found:
-                                correct_prediction = x
-                                found = True
-                            else:
-                                multiple_match = True
-                    if found and not multiple_match:
-                        return True,correct_prediction
+                    # To prevent errors when graceful_request() returns 'None'
+                    if resp_x is None:
+                        break
+                    resp_x = resp_x.get('result')
+                    website_in_json = extract(resp_x.get('website'))
+                    if website == self.website_parser(website_in_json):
+                        if not found:
+                            correct_prediction = x
+                            found = True
+                        else:
+                            multiple_match = True
+                if found and not multiple_match:
+                    return True,correct_prediction
         return False,''
 
     def update_json_object(self, place_id):
@@ -372,7 +373,7 @@ class AutoComplete():
                         if i==(len(reviews)-1):
                             row["rating"]+=str(reviews[i]['rating'])
                             row['author']+=reviews[i]['author_name'].encode('utf-8')
-                            row['reviews']+=reviews[i]['text'].encode('utf-8').replace(",","&#44")
+                            row['reviews']+=reviews[i]['text'].encode('utf-8').replace(",","&#44;")
                         else:
                             row["rating"]+=str(reviews[i]['rating'])+","
                             row['author']+=reviews[i]['author_name'].encode('utf-8')+","

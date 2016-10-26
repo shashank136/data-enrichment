@@ -163,7 +163,9 @@ class processGraph:
             if row['Phone'+str(i)]:
                 phones.append(self.number_parser(row['Phone'+str(i)]))
         if row['Website']:
-            websites.extend(row['Website'].split(','))
+            websites.append(row['Website'].strip())
+        if row['Website2']:
+            websites.append(row['Website2'].strip())
         if row['Mail']:
             emails.append(row['Mail'].strip())
         if row['Mail2']:

@@ -19,7 +19,7 @@ from autoComplete import AutoComplete
 from fbGraph import processGraph,UTF8
 from mediaWiki import mediaWiki
 from validate_email import filterMails
-from removeDuplicates import removeDuplicates 
+from removeDuplicates import removeDuplicates
 
 
 KEYS = [
@@ -72,7 +72,7 @@ class geocoderTest():
             self.fbGraph.processAll(self.rows)
             self._addFeaturedImage()
             self.mobiles.processAll(self.rows)
-            self.filterMails(self.rows,fileBaseName)            
+            self.filterMails(self.rows,fileBaseName)
 ##            self.wikipedia.processAll(self.rows) #not complete yet
             '''
             added patternmatcher
@@ -93,7 +93,7 @@ class geocoderTest():
         # append new columns
 
 
-        reader.fieldnames.extend(["Mail2", "listing_locations", "featured_image", "location_image", "fullAddress", "lat", "lng","viewport","prec_loc"]);
+        reader.fieldnames.extend(["Website2","Mail2", "listing_locations", "featured_image", "location_image", "fullAddress", "lat", "lng","viewport","prec_loc"]);
         reader.fieldnames.extend(["rating","reviews","author","Total Views","avg_rating","place_details", "fb_page", "fb_verified"]);
         reader.fieldnames.extend(['autocomplete_precise_address','place_id','perma_closed','Mobiles','wikipedia','fb_posts','fb_photos','fb_videos','fb_workingHours'])
         self.FIELDS = reader.fieldnames;
