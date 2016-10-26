@@ -34,23 +34,19 @@ class removeDuplicates:
         return hash(k)
 
     def mergeRow(self,group):
-        multiFields = [['Phone1','Phone2','Phone3','Phone4','Phone5'],['Mail','Mail2']]
+        multiFields = [['Phone1','Phone2','Phone3','Phone4','Phone5'],['Mail','Mail2'],['Website','Website2']]
         row1 = group.pop(0)
         comm_id = int(row1['EduID'])
         pos=0
         while pos<len(group):
             row2 = group[pos]
             pos+=1
-
             for i in row1:
                 if row2[i]:
-##                    print row1[i]+"  "+row2[i]
                     if i == 'EduID':
                         comm_id = min(comm_id,int(row2[i]))
                     else:
                         row1[i] = self.mergeField(row1[i],row2[i])
-##                    print [row2[i] for i in self.main_fields]
-##                    print("=>"+row1[i])
             self.rows.remove(row2)
         row1['EduID'] = str(comm_id)
 
