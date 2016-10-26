@@ -1,8 +1,16 @@
 import logging
+import re
 
 class removeDuplicates:
     def __init__(self):
         self.main_fields = ['Name','Street Address','Locality','City','Pincode']
+
+    def website_base(self,website):
+        regex = r"^(?:https?:\/\/)?(?:[^@\/\n]+@)?(?:www\.)?([^:\/\n]+)"
+        matches = re.match(regex, website, re.IGNORECASE | re.MULTILINE)
+        if matches:
+            return matches.group(1)
+        return ''
 
     def group_similar(self):
         groups =dict()
@@ -52,10 +60,20 @@ class removeDuplicates:
 
         for fld in multiFields:
             fields=[]
-            for i in fld:
-                if row1[i]:
-                    fields+=row1[i].split(',')
-##                    print i,row1[i]
+            if fld == ['Website','Website2']:
+                unique_bases = set()
+                for i in fld:
+                    if row1[i]:
+                        for x in row1[i].split(','):
+                            base = self.website_base(x)
+                            if base not in unique_bases:
+                                unique_bases.add(base)
+                                fields.append(x)
+            else:
+                for i in fld:
+                    if row1[i]:
+                        fields+=row1[i].split(',')
+    ##                    print i,row1[i]
             for n,i in enumerate(fld):
                 if n>len(fields)-1:
                     break
