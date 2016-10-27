@@ -108,26 +108,16 @@ class processMobile:
                 if i==5:
                     break;
                 else:
-                    add='+91'
-                    phn_no=noslist[i]
-                    if phn_no[0]=='0':
-                        phn_no=add+phn_no[1:]
-                        
-                    elif phn_no[0:2]=='91':
-                        phn_no=add+phn_no[2:]
-                    else:
-                        phn_no=add+phn_no
-
-                    result=self._request(phn_no)
+                    phn_no=self._addCountryCode(noslist[i])
                     try:
+                        result=self._request(phn_no)
                         y=result['phone_number']
-                        # row['Phone'+str(p_col+1)]="".join(re.findall(r'\d+',noslist[i]))
+                        if '+91' in noslist[i][:len(noslist[i])/2]:
+                            noslist[i]=noslist[i].replace('+91','0')
                         row['Phone'+str(p_col+1)]=noslist[i]
-                        
                         p_col+=1
                     except:
-                        print "Bad Phone number encountered, Deleted..."
-                    # row['Phone'+str(i+1)]=noslist[i]
+                        print "Bad Phone number "+safe_dec_enc(noslist[i])+" Deleted..."
                     
 
     def processAll(self,rows):
