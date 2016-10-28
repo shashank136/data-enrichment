@@ -187,7 +187,7 @@ class processGraph:
             for email in emails:
                 if 'emails' in place and email:
                     for x in place['emails']:
-                        if x == email:
+                        if x.encode('utf-8','ignore') == email:
                             node = self.graph.get(place['id']+"?fields=name,location,is_verified,description,phone,link,cover,website,emails")
                             return node
 
