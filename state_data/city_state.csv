@@ -2,6 +2,7 @@ Name of City,State
 Mumbai,Maharashtra
 Delhi,Delhi
 Bengaluru,Karnataka
+Bangalore,Karnataka
 Ahmedabad,Gujarat
 Hyderabad,Telangana
 Chennai,Tamil Nadu
@@ -44,6 +45,8 @@ Madurai,Tamil Nadu
 Guwahati,Assam
 Chandigarh,Chandigarh
 Hubli-Dharwad,Karnataka
+Hubli,Karnataka
+Kolhapur,Maharashtra
 Amroha,Uttar Pradesh
 Moradabad,Uttar Pradesh
 Gurgaon,Haryana
@@ -52,11 +55,13 @@ Solapur,Maharashtra
 Ranchi,Jharkhand
 Jalandhar,Punjab
 Tiruchirappalli,Tamil Nadu
+Trichy,Tamil Nadu
 Bhubaneswar,Odisha
 Salem,Tamil Nadu
 Warangal,Telangana
 Mira-Bhayandar,Maharashtra
 Thiruvananthapuram,Kerala
+Trivandrum,Kerala
 Bhiwandi,Maharashtra
 Saharanpur,Uttar Pradesh
 Guntur,Andhra Pradesh
@@ -67,6 +72,8 @@ Jamshedpur,Jharkhand
 Bhilai Nagar,Chhattisgarh
 Cuttack,Odisha
 Kochi,Kerala
+Cochin,Kerala
+Ghaziabad,Uttar Pradesh
 Udaipur,Rajasthan
 Bhavnagar,Gujarat
 Dehradun,Uttarakhand
@@ -84,12 +91,14 @@ Jammu,Jammu and Kashmir
 Belagavi,Karnataka
 Raurkela,Odisha
 Mangaluru,Karnataka
+Mangalore,Karnataka
 Tirunelveli,Tamil Nadu
 Malegaon,Maharashtra
 Gaya,Bihar
 Tiruppur,Tamil Nadu
 Davanagere,Karnataka
 Kozhikode,Kerala
+Calicut,Kerala
 Akola,Maharashtra
 Kurnool,Andhra Pradesh
 Bokaro Steel City,Jharkhand
@@ -335,6 +344,7 @@ Nagda,Madhya Pradesh
 Port Blair,Andaman and Nicobar Islands
 Lakhisarai,Bihar
 Panaji,Goa
+Goa,Goa
 Tinsukia,Assam
 Itarsi,Madhya Pradesh
 Kohima,Nagaland
