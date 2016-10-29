@@ -71,7 +71,7 @@ class emailFilter(threading.Thread):
                 return self.missed
 
 
-def filterMails(rows,fname,max_threads=10):
+def filterMails(rows,fname,max_threads=100):
         threads=[]
         rejected=[]
         accepted=[]
