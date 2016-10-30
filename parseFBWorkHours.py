@@ -18,8 +18,9 @@ from phpserialize import serialize
 from parseGWorkHours import getTime
 
 dayofweek=['SUNDAY','MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY']
-final_list=[]
+
 def parse(diction):
+    final_list=[]
     for i in dayofweek:
         tOpen,tClose = diction.get(i.lower()[:3]+'_1_open'), diction.get(i.lower()[:3]+'_1_close')
         
