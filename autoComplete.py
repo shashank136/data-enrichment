@@ -199,9 +199,10 @@ class AutoComplete():
             url='https://maps.googleapis.com/maps/api/place/details/json?placeid='+place_id+'&key='
             resp_x = self.graceful_request(url)
             if resp_x is None:
-                return
+                return False
             resp_x = resp_x.get('result')
             self.json_objects[place_id]=resp_x
+            return True
 
     def main(self,rows_data,state):
         self.rows = rows_data
@@ -274,10 +275,9 @@ class AutoComplete():
                         # False : Single matching state is not a guaranteed. because of high noise in query
                         flag, prediction =  self.analyze_prediction(row,address,state,False,False,temp_json)
 
-            if flag == True:
+            if flag == True and self.update_json_object(prediction['place_id']):
                 fixed_count += 1
                 row['place_id'] = prediction['place_id']
-                self.update_json_object(prediction['place_id'])
             else:
                 no_prediction_count += 1
 
