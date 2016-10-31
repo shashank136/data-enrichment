@@ -1,16 +1,38 @@
-# Usage :
-In Frontend: python main.py
+## Data Enrichment API
 
-In Background: python main.py > $(date -d "today" +"%Y%m%d%H%M").log 2>&1 &
+This project is a generic API to enrich any input contact details.
+
+If leverages following APIs for Data enrichment:
+1) Google AutoComplete
+2) Google Places
+3) Geo Geolocation
+4) Facebook Graph
+5) Twilio
+
+Soon, support will be added for Wikipedia.
+
+Other Features:
+* As part of data enrichment API, it removes wrong email addresses. 
+* It supports multiple keys, which will be automatically changed in case first key is failed.
+* Wrong Contact numbers will be automatically removed
+* Default image will be automatically added in case no image is available.
+
+Note:
+* Though contact number API is made to cater to India, it can easily be extended to other countries.
+* Currently City State data is only for India. To make it extendible, add your own data
+* Working Hours are serialized in PHP Serialization Format.
 
 
-# Superlist Bulk import Preprocessor
+## Usage :
+In Frontend: 
+    python main.py
 
-This project is a part of Step 2 of our Directory Listing project. Here we pre process all the scrapped entry to make it meaningful for us. 
+In Background: 
+* Specifically tested on linux systems
+* In our case substitute \<filename> with main
+* For substituting {datetime} with actual date time:
+    python main.py > $(date -d "today" +"%Y%m%d%H%M").log 2>&1 &
 
-This pre processing script that will run before data is fed inside WP All Import plugin. This pre processing script will convert input data into a format that is compatible with Superlist.
-
-Also this script will help us in decreasing manual effort of our Operations team, thus saving a lot of time and causing less number of errors.
 
 ## Running Process in a separate 'tmux' session
 
@@ -35,23 +57,6 @@ In case you forget the session name, you can check out the active sessions in th
 All the terminal properties are preserved, and will happen relative to the session you start the jobs in.
 So running the script is same as described below.
 
-## Running Python script in background:
-
-```python
-python <filename>.py &
-
-```
-## Running Python script in background and directing the console messages to log file:
-
-```python
-python <filename>.py > {datetime}.log 2>&1 &
-```
-
-* Specifically tested on linux systems
-* In our case substitute \<filename> with main
-* For substituting {datetime} with actual date time:
-
- ```$(date -d "today" +"%Y%m%d%H%M")```
 
 ### Finding phone number patterns in file
 
