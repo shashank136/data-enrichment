@@ -55,6 +55,20 @@ class geocoderTest():
         self.wikipedia = mediaWiki()
         self.removeDuplicates = removeDuplicates()
 
+        # FOR STATE DATA
+        self.state_data_rows = []
+        file_name = glob.glob('./state_data/city_state.csv')
+        with open(file_name[0],'r') as state_file:
+            state_reader = csv.DictReader(state_file, dialect=csv.excel)
+            self.state_data_rows.extend(state_reader)
+
+    def get_state(self,city):
+        for row in self.state_data_rows:
+            if row['Name of City'].strip().lower() == city.strip().lower():
+                return row['State']
+        print 'NO STATE MATCH FOR CITY :',city
+        sys.exit()
+
     def process(self):
         fileNames = glob.glob('./input/*.csv');
         print fileNames
@@ -64,12 +78,14 @@ class geocoderTest():
             self.FIELDS = []
             fileBaseName = os.path.splitext(os.path.basename(fileName))[0]
             self._readCSV(fileName)
+            state = self.get_state(self.rows[0]['City'])
+
             self.removeDuplicates.processAll(self.rows)
             self._removeThumbs()
             print "\nCurrent file is",fileName,"\n"
-            self.autoComp.main(self.rows)
+            self.autoComp.main(self.rows,state)
             self._addGeocoding()
-            self.fbGraph.processAll(self.rows)
+            self.fbGraph.processAll(self.rows,state)
             self._addFeaturedImage()
             self.mobiles.processAll(self.rows)
             self.filterMails(self.rows,fileBaseName)

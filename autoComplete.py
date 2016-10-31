@@ -17,32 +17,9 @@ class AutoComplete():
         self.chain_failure = False      # TO DISTINGUISH BETWEEN CONCURRENT CALL FAILURE and QUERY-OVERLIMIT FAILURE
 
         self.autocomplete_flag = ['VERIFIED', 'NOT VERIFIED']
-        # FOR STATE DATA TO BE USED BY AUTOCOMPLETE
-        self.state_data_rows = []
-        file_name = glob.glob('./state_data/city_state.csv')
-        state_file = open(file_name[0],'r')
-        state_reader = csv.DictReader(state_file, dialect=csv.excel)
-        self.state_data_rows.extend(state_reader)
-        state_file.close()
-
         self.rows = []
         # GLOBAL JSON DICTIONARY TO BE USED BY ALL FUNCTION RATHER THAN MAKING  DIRECT API CALLS
         self.json_objects = dict()
-
-    def get_state(self,city):
-        state = ''
-        found = False
-
-        for row in self.state_data_rows:
-            if row['Name of City'].strip().lower() == city.strip().lower():
-                state = row['State']
-                found = True
-                break
-        if not found:
-            print 'NO STATE MATCH FOR CITY'
-            sys.exit()
-        else:
-            return state
 
     def graceful_request(self,url):
         chain_count = 0
@@ -226,9 +203,9 @@ class AutoComplete():
             resp_x = resp_x.get('result')
             self.json_objects[place_id]=resp_x
 
-    def main(self, rows_data):
+    def main(self,rows_data,state):
         self.rows = rows_data
-        self._autoComplete()
+        self._autoComplete(state)
         self._updateAddress()
         self._addLocationPhoto()
         self._addRatingsReviews()
@@ -239,12 +216,11 @@ class AutoComplete():
         # So _releaseMemory() should be the last function to run. Place other functions before this.
         self._releaseMemory()
 
-    def _autoComplete(self):
+    def _autoComplete(self,state):
         fixed_count = 0
         no_prediction_count = 0
 
         print '\nRUNNING AUTOCOMPLETE'
-        state = self.get_state(self.rows[0]['City'])
         print 'STATE : ',state
         row_idx=2
 
@@ -410,7 +386,7 @@ class AutoComplete():
                 for i in (add_comp):
                     if 'sublocality_level_1' in i['types']:
                         row['Locality']=i['long_name'].title()
-                    if 'locality' in i['types']:
+                    if 'administrative_area_level_2' in i['types']:
                         row['City']=i['long_name'].title()
                     if 'postal_code' in i['types']:
                         row['Pincode']=i['long_name']

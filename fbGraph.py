@@ -54,21 +54,6 @@ class processGraph:
         self.state_data_rows.extend(state_reader)
         state_file.close()
 
-    def get_state(self,city):
-        state = ''
-        found = False
-
-        for row in self.state_data_rows:
-            if row['Name of City'].strip().lower() == city.strip().lower():
-                state = row['State']
-                found = True
-                break
-        if not found:
-            print('NO STATE MATCH FOR CITY');
-            sys.exit()
-        else:
-            return state
-
     def number_parser(self,x):
         flag_add = False
         numerals = ['0','1','2','3','4','5','6','7','8','9']
@@ -481,12 +466,11 @@ class processGraph:
         if not row['Working Hours'] and row['fb_workingHours']:
             row['Working Hours'] = row['fb_workingHours']
 
-    def processAll(self,rows):
+    def processAll(self,rows,state):
         details,link,cover,website,pincode,street,dp,verified,phone,email=0,0,0,0,0,0,0,0,0,0 #stats
         total = len(rows)
-        state = self.get_state(rows[0]['City'])
-        print('STATE : ',state);
         print("Fetching info from FB Graph")
+        print 'STATE : ',state
         for progress,row in enumerate(rows):
             try:
                 node = self.searchPlace(row,state)
