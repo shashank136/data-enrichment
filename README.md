@@ -3,6 +3,7 @@
 This project is a generic API to enrich any input contact details.
 
 If leverages following APIs for Data enrichment:
+
 1) Google AutoComplete
 2) Google Places
 3) Geo Geolocation
@@ -34,6 +35,23 @@ In Background:
     python main.py > $(date -d "today" +"%Y%m%d%H%M").log 2>&1 &
 
 
+## Utilities
+
+### Finding phone number patterns in file
+
+```python
+python findNoPat.py
+```
+* It will work on all processed files and save the output to ./output/PatMatch
+
+### Add RowId
+
+To add Row Id, run 
+```python
+python util/addUniqueId.py
+```
+
+
 ## Running Process in a separate 'tmux' session
 
 This prevents the running job from getting terminated in case you loose your ssh connection.
@@ -56,11 +74,3 @@ In case you forget the session name, you can check out the active sessions in th
 
 All the terminal properties are preserved, and will happen relative to the session you start the jobs in.
 So running the script is same as described below.
-
-
-### Finding phone number patterns in file
-
-```python
-python findNoPat.py
-```
-* It will work on all processed files and save the output to ./output/PatMatch
