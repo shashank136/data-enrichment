@@ -206,17 +206,20 @@ class processGraph:
         row['Locality'] = safe_dec_enc(row['Locality'])
         ################
         self.viewFactor=0
-        query = row['Name']
-        node = self.analyze_prediction(row,query,False)
+        node = None
 
-        if not node and row['Locality']:
+        if row['Locality']:
             query = row['Name'] + ', ' + row['Locality']
             node=self.analyze_prediction(row,query,True)
-
+        if not node:
+            query = row['Name'] + ', ' + row['City']
+            node=self.analyze_prediction(row,query,True)
         if not node:
             query = row['Name'] + ', ' + state
             node=self.analyze_prediction(row,query,True)
-
+        if not node:
+            query = row['Name']
+            node = self.analyze_prediction(row,query,False)
         return node
 
     def _repairDetails(self,row,node):
