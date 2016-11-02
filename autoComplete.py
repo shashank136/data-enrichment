@@ -208,9 +208,10 @@ class AutoComplete():
         self.rows = rows_data
         self._autoComplete(state)
         self._updateAddress()
+        self._googleUpdates()
+        self._remove_intermediate_duplicates()
         self._addLocationPhoto()
         self._addRatingsReviews()
-        self._googleUpdates()
         self._formatWorkinghours()
         # Dictionary self.json_objects is large
         # This should be released before the next file is opened as the current object won't go out of scope.
@@ -233,7 +234,7 @@ class AutoComplete():
             flag = False
             prediction = ''
 
-            if (row['Locality'] == ''):
+            if not row['Locality']:
                 valid = False
             else:
                 address = row['Name'] + ', ' + row['Locality']
@@ -414,6 +415,31 @@ class AutoComplete():
                     row['Working Hours']=GWrkHours
                 except Exception:
                     row['Working Hours']=''
+
+    def rhash(self,row):
+        main_fields = ['Name','Street Address','Locality','City','Pincode']
+        k=""
+        for i in main_fields:
+            k+=str(row.get(i)).lower().strip()
+        return hash(k)
+
+    def _remove_intermediate_duplicates(self):
+        groups =dict()
+        for row in self.rows:
+            hsh = self.rhash(row)
+            if hsh in groups:
+                groups[hsh].append(row)
+            else:
+                groups[hsh] = [row]
+        total_count = 0
+        for i in groups:
+            sub_count = 0
+            groups[i].pop(0)
+            for row in groups[i]:
+                self.rows.remove(row)
+                sub_count += 1
+            total_count += sub_count
+        print '\nREMOVED INTERMEDIATES : ',total_count
 
     def _releaseMemory(self):
         self.json_objects.clear()
