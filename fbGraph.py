@@ -19,9 +19,11 @@ def UTF8(data):
         return data
 
 # SAFE DECODING ENCODING
-def safe_dec_enc(data):
+def safe_dec_enc(data,basic=False):
     if data:
         # BECAUSE DATA IS NOT GUARANTEED TO BE UTF-8 ENCODED
+        if basic:
+            return data.decode('ascii','ignore').encode('ascii')
         return data.decode('utf-8','ignore').encode('utf-8')
     # For NoneTypes
     return ''
@@ -202,8 +204,8 @@ class processGraph:
 
     def searchPlace(self,row,state):
         ################
-        row['Name'] = safe_dec_enc(row['Name'])
-        row['Locality'] = safe_dec_enc(row['Locality'])
+        row['Name'] = safe_dec_enc(row['Name'],True)
+        row['Locality'] = safe_dec_enc(row['Locality'],True)
         ################
         self.viewFactor=0
         node = None
