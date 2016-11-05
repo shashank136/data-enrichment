@@ -281,22 +281,16 @@ class processGraph:
                 return 1
             return 0
     def _addEmails(self,row,node):
-##        if row['Mail'] and not validate_email(row['Mail']):
-##            print "Invalid mail removed:"+row['Mail']
-##            row['Mail'] = ""
         check = 0
         if 'emails' in node:
             for i in node['emails']:
-##                if validate_email(i):
-                    if row['Mail'] and i.strip() not in row['Mail'].strip():
-                        row['Mail2'] = i
-                        return check+1
-                    row['Mail'] = i
-                    check = 1
-##                else:
-##                    print "Invalid mail not considered:"+i
-
+                if row['Mail'] and i.encode('utf-8','ignore').strip() not in row['Mail'].strip():
+                    row['Mail2'] = i
+                    return check+1
+                row['Mail'] = i
+                check = 1
         return check
+
     def _addPhone(self,row,node):
         if 'phone' in node:
             ph = map(UTF8,node['phone'].split(','))
