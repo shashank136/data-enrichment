@@ -207,7 +207,8 @@ class geocoderTest():
 
     def _removeThumbs(self):
         for row in self.rows:
-            row["Images URL"] = ",".join(filter(lambda url: not 'businessphoto-t' in url,row["Images URL"].split(",")))
+            if row["Images URL"]:
+                row["Images URL"] = ",".join(filter(lambda url: not 'businessphoto-t' in url,row["Images URL"].split(",")))
 
     def _addFeaturedImage(self):
         for row in self.rows:
