@@ -6,7 +6,8 @@ from smtplib import SMTPServerDisconnected
 import logging
 import threading
 import csv, glob
-import requests,os
+import requests,os,sys
+csv.field_size_limit(sys.maxsize)
 
 class MailBoxLayer():
     def __init__(self):
