@@ -11,7 +11,20 @@ csv.field_size_limit(sys.maxsize)
 
 class MailBoxLayer():
     def __init__(self):
-        self.mailboxlayer_keys = ['ddeaa4d54802ae4503566c57b04ff130','06caf934d5ee4cd4e7aed6aae0df2f2c','5b853d821972f8a2bdded92a851f65a7','4513a044ade0beb9bd636cca2bde959f','082d30e5cac0ecddcf883339e3a75fd6','ae4237d313d6670983d30eae5f64ce6e','44671ea7b3211a6df6237bc4cb6e97b6','d0fe2340309f18e82099803a07c5c1d1','8d2cee1d996bcc8655f84a5142cf2c05','888b6ceb21edb3ab6a0977b8d4ab7fcc']
+        self.mailboxlayer_keys = [
+                                'b1a65e65dff1e93fb5f9283820fbba4a',
+                                '1955555c2c300784c2cc21274d0551d2','eabdeed7f1b28191840584118c3f1c07',
+                                '0ebe9383b47d0027e5959918694f09a4','f578821fb823568f551675e8e6066a0c',
+                                'c2d5df125595605fc33c17acfad677a2','0dbf3f0ad9e3a5aa631fc18c84619067',     
+                                '7b7ea008ae52906aea30d641c68a9ac0','c93a76c7df906b57d2d215acbad4f7f3',
+                                'b0c7ca3ff27a9a78c85ae3790c7df9fc','afe24335c8e116ec0cacca27deaf3262',
+                                'afe24335c8e116ec0cacca27deaf3262','ddeaa4d54802ae4503566c57b04ff130',
+                                '06caf934d5ee4cd4e7aed6aae0df2f2c','5b853d821972f8a2bdded92a851f65a7',
+                                '4513a044ade0beb9bd636cca2bde959f','082d30e5cac0ecddcf883339e3a75fd6',
+                                'ae4237d313d6670983d30eae5f64ce6e','44671ea7b3211a6df6237bc4cb6e97b6',
+                                'd0fe2340309f18e82099803a07c5c1d1','8d2cee1d996bcc8655f84a5142cf2c05',
+                                '888b6ceb21edb3ab6a0977b8d4ab7fcc'
+                                ]
         self.mailboxlayer_key_index = 0
 
     def mailbox_request(self,email):
@@ -143,6 +156,6 @@ class Manager:
             self.write_csv(file_path,fields,rows)
 
 if __name__ == '__main__':
-    files = glob.glob("../output/updated_*.csv")
+    files = glob.glob("../output/updated_kalapi_1.csv")
     obj = Manager()
     obj.main(files)
