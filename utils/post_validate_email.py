@@ -57,6 +57,7 @@ class emailFilter(threading.Thread):
             mxRecord = records[0].exchange
             mxRecord = str(mxRecord)
             host = socket.gethostname()
+            socket.setdefaulttimeout(120)
             server = smtplib.SMTP()
             server.set_debuglevel(0)
             server.connect(mxRecord)
