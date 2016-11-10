@@ -156,6 +156,6 @@ class Manager:
             self.write_csv(file_path,fields,rows)
 
 if __name__ == '__main__':
-    files = glob.glob("../output/updated_kalapi_1.csv")
+    files = glob.glob("../output/updated_*.csv")
     obj = Manager()
     obj.main(files)
