@@ -6,7 +6,9 @@ import glob,csv,json
 from random import randint
 import parseFBWorkHours
 
-KEYS_FB=['1040517959329660|c7e458dd968fca33d05a18fddbcd86ab',   #Rohit
+KEYS_FB=['1812886018965623|a43d798be9fba8e94d3f4f98d0333b62',   #Anon
+         '1327435673986191|8bfc29c57479473a77257f75377d88f3',   #Anon
+         '1040517959329660|c7e458dd968fca33d05a18fddbcd86ab',   #Rohit
          '1697721727215546|a372f9c8b412e8b053094042fc4b42e6',   #Shantanu
           ]# format is AppID|AppSecret, API version: 2.7
 
