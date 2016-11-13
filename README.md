@@ -34,6 +34,16 @@ In Background:
 * For substituting {datetime} with actual date time:
     python main.py > $(date -d "today" +"%Y%m%d%H%M").log 2>&1 &
 
+### For Installing requirements:
+
+```python
+pip install -r requirements.txt
+```
+If there is <b>InsecurePlatformWarning</b>:
+
+```python
+pip install pyopenssl ndg-httpsclient pyasn1
+```
 
 ## Utilities
 
