@@ -4,12 +4,9 @@ import glob
 import os
 import time
 import googlemaps
-from slugify import slugify
-import urllib
 import requests
 import sys
 from fbGraph import processGraph,UTF8
-import pandas as pd
 
 csv.field_size_limit(sys.maxsize)
 
