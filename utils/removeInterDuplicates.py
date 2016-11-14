@@ -1,5 +1,6 @@
 import csv
 import glob,sys
+import joinCSV
 csv.field_size_limit(sys.maxsize)
 
 class Inter_Duplicates:
@@ -63,6 +64,7 @@ class Inter_Duplicates:
         print '\n',self.removed_EduID
 
 if __name__ == '__main__':
+    joinCSV.ConcatCSV().join('../output/updated_*.csv')
     files = glob.glob("../output/updated_*.csv")
     obj = Inter_Duplicates()
     obj.main(files)
