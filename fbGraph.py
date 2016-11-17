@@ -6,7 +6,9 @@ import glob,csv,json
 from random import randint
 import parseFBWorkHours
 
-KEYS_FB=['1040517959329660|c7e458dd968fca33d05a18fddbcd86ab',   #Rohit
+KEYS_FB=['1812886018965623|a43d798be9fba8e94d3f4f98d0333b62',   #Anon
+         '1327435673986191|8bfc29c57479473a77257f75377d88f3',   #Anon
+         '1040517959329660|c7e458dd968fca33d05a18fddbcd86ab',   #Rohit
          '1697721727215546|a372f9c8b412e8b053094042fc4b42e6',   #Shantanu
           ]# format is AppID|AppSecret, API version: 2.7
 
@@ -19,9 +21,11 @@ def UTF8(data):
         return data
 
 # SAFE DECODING ENCODING
-def safe_dec_enc(data):
+def safe_dec_enc(data,basic=False):
     if data:
         # BECAUSE DATA IS NOT GUARANTEED TO BE UTF-8 ENCODED
+        if basic:
+            return data.decode('ascii','ignore').encode('ascii')
         return data.decode('utf-8','ignore').encode('utf-8')
     # For NoneTypes
     return ''
@@ -53,21 +57,6 @@ class processGraph:
         state_reader = csv.DictReader(state_file, dialect=csv.excel)
         self.state_data_rows.extend(state_reader)
         state_file.close()
-
-    def get_state(self,city):
-        state = ''
-        found = False
-
-        for row in self.state_data_rows:
-            if row['Name of City'].strip().lower() == city.strip().lower():
-                state = row['State']
-                found = True
-                break
-        if not found:
-            print('NO STATE MATCH FOR CITY');
-            sys.exit()
-        else:
-            return state
 
     def number_parser(self,x):
         flag_add = False
@@ -217,21 +206,24 @@ class processGraph:
 
     def searchPlace(self,row,state):
         ################
-        row['Name'] = safe_dec_enc(row['Name'])
-        row['Locality'] = safe_dec_enc(row['Locality'])
+        row['Name'] = safe_dec_enc(row['Name'],True)
+        row['Locality'] = safe_dec_enc(row['Locality'],True)
         ################
         self.viewFactor=0
-        query = row['Name']
-        node = self.analyze_prediction(row,query,False)
+        node = None
 
-        if not node and row['Locality']:
+        if row['Locality']:
             query = row['Name'] + ', ' + row['Locality']
             node=self.analyze_prediction(row,query,True)
-
+        if not node:
+            query = row['Name'] + ', ' + row['City']
+            node=self.analyze_prediction(row,query,True)
         if not node:
             query = row['Name'] + ', ' + state
             node=self.analyze_prediction(row,query,True)
-
+        if not node:
+            query = row['Name']
+            node = self.analyze_prediction(row,query,False)
         return node
 
     def _repairDetails(self,row,node):
@@ -291,22 +283,16 @@ class processGraph:
                 return 1
             return 0
     def _addEmails(self,row,node):
-##        if row['Mail'] and not validate_email(row['Mail']):
-##            print "Invalid mail removed:"+row['Mail']
-##            row['Mail'] = ""
         check = 0
         if 'emails' in node:
             for i in node['emails']:
-##                if validate_email(i):
-                    if row['Mail'] and i.strip() not in row['Mail'].strip():
-                        row['Mail2'] = i
-                        return check+1
-                    row['Mail'] = i
-                    check = 1
-##                else:
-##                    print "Invalid mail not considered:"+i
-
+                if row['Mail'] and i.encode('utf-8','ignore').strip() not in row['Mail'].strip():
+                    row['Mail2'] = i
+                    return check+1
+                row['Mail'] = i
+                check = 1
         return check
+
     def _addPhone(self,row,node):
         if 'phone' in node:
             ph = map(UTF8,node['phone'].split(','))
@@ -481,12 +467,11 @@ class processGraph:
         if not row['Working Hours'] and row['fb_workingHours']:
             row['Working Hours'] = row['fb_workingHours']
 
-    def processAll(self,rows):
+    def processAll(self,rows,state):
         details,link,cover,website,pincode,street,dp,verified,phone,email=0,0,0,0,0,0,0,0,0,0 #stats
         total = len(rows)
-        state = self.get_state(rows[0]['City'])
-        print('STATE : ',state);
         print("Fetching info from FB Graph")
+        print 'STATE : ',state
         for progress,row in enumerate(rows):
             try:
                 node = self.searchPlace(row,state)
