@@ -20,6 +20,7 @@ from fbGraph import processGraph,UTF8
 from mediaWiki import mediaWiki
 from validate_email import filterMails
 from removeDuplicates import removeDuplicates
+from DownloadImage import DownloadImages
 
 
 KEYS = [
@@ -54,6 +55,7 @@ class geocoderTest():
         self.mobiles = processMobile()
         self.wikipedia = mediaWiki()
         self.removeDuplicates = removeDuplicates()
+        self.download_images = DownloadImages
 
         # FOR STATE DATA
         self.state_data_rows = []
@@ -70,7 +72,7 @@ class geocoderTest():
         sys.exit()
 
     def process(self):
-        fileNames = glob.glob('./input/*.csv');
+        fileNames = glob.glob('./input/sample.csv');
         print fileNames
         fileCount = 0
         for fileName in fileNames:
@@ -83,6 +85,8 @@ class geocoderTest():
             self.removeDuplicates.processAll(self.rows)
             self._removeThumbs()
             print "\nCurrent file is",fileName,"\n"
+            
+            self.download_images(self.rows)
             self.autoComp.main(self.rows,state)
             self._addGeocoding()
             self.fbGraph.processAll(self.rows,state)
