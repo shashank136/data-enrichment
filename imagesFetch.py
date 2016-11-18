@@ -4,6 +4,7 @@ import re
 import os
 import glob
 def fetch(s):
+	s=s.replace('[Address Unverified]','')
 	li=""
 	x=re.compile(r'[A-Z]')
 	x=x.findall(s)
