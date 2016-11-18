@@ -53,7 +53,7 @@ class SaveImg():
 			print len(lis_imgs)
 			for i in lis_imgs:
 				if 'static.career' not in i and i!=' ':
-	  				h.update(row['post_title']+str(row['EduID'])+str(i))
+	  				h.update(i+str(row['EduID']))
 					cont=h.hexdigest()
     				try:
 						req=requests.get(i)
