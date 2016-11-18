@@ -4,6 +4,8 @@ import os
 def DownloadImages(rows):
 	not_responding_urls = []
 	for row in rows:
+		print "row=\n\n",row,"\n\n"
+		inp = input()
 		newpath = r'downloaded_images/'+row['City']
 		if not os.path.exists(newpath):
 			os.makedirs(newpath)
@@ -12,7 +14,7 @@ def DownloadImages(rows):
 			image = image.strip()
 			filename = image.split('/')[-1]
 			try:
-				urllib.urlretrieve(image,"downloaded_images/"+row['City']+"/"+filename)
+				urllib.urlretrieve(image,"downloaded_images/"+row['City']+"/"+row['EduID']+"__"+filename)
 			except:
 				not_responding_urls.append(image)
 	#the following line shows list of urls failed to fetch			
