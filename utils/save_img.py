@@ -3,6 +3,8 @@ import hashlib
 import requests
 import csv
 import sys,os
+import os.path
+import urllib
 csv.field_size_limit(sys.maxsize)
 
 def UTF8(data):
@@ -41,7 +43,7 @@ class SaveImg():
 		inputFile.close();
 	
 	def save_img(self):
-
+		print 'Downloading...'
 		for row in self.rows:
 			s=''
 			lis_imgs=[]
@@ -50,22 +52,33 @@ class SaveImg():
 			h=hashlib.new('ripemd160')
 			s=row['listing_gallery']
 			lis_imgs=s.split(',')
-			print len(lis_imgs)
 			for i in lis_imgs:
 				if 'static.career' not in i and i!=' ':
+					print '## Trying Method 1'
 	  				h.update(i+str(row['EduID']))
 					cont=h.hexdigest()
-    				try:
-						req=requests.get(i)
-						if req.status_code==200:
-							print 'Downloading'
-							with open('../output/images/%s.jpg'%cont,'wb') as f:
-								f.write(req.content)
-	    						f.close()
-	    					new_lis_imgs.append('http://static.careerbreeder.com/output/images/%s.jpg'%cont)
-	    			
-	    			except Exception as err:
-	    				print err
+					print cont
+					if not os.path.exists('../output/images/%s.jpg'%cont):
+						try:
+							req=requests.get(i)
+							if req.status_code==200:
+								# print 'Downloading..'
+								with open('../output/images/%s.jpg'%cont,'wb') as f:
+									f.write(req.content)
+		    						f.close()
+		    						print 'Download success'
+		    					new_lis_imgs.append('http://static.careerbreeder.com/output/images/%s.jpg'%cont)
+
+						except:
+							try:
+								print '## Trying Method 2'
+								urllib.urlretrieve(i,'../output/images/%s.jpg'%cont)
+								new_lis_imgs.append('http://static.careerbreeder.com/output/images/%s.jpg'%cont)
+								print 'Download success'
+							except Exception as err:
+								print err
+					else:
+						print 'File already downloaded'
 
     		if len(new_lis_imgs)!=0:
     			row['listing_gallery']=",".join(new_lis_imgs)
