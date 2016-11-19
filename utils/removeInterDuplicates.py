@@ -5,7 +5,7 @@ csv.field_size_limit(sys.maxsize)
 
 class Inter_Duplicates:
     def __init__(self):
-        self.main_fields = ['post_title','Street Address','Locality','City','Pincode']
+        self.main_fields = ['post_title','fullAddress','Locality','City','Pincode']
         self.hash_universe = set()
         self.removed_EduID = []
 
