@@ -19,7 +19,7 @@ class SaveImg():
 	    self.FIELDS = []
 	
 	def process(self):
-		fileNames=glob.glob('../output/updated_*.csv')
+		fileNames=glob.glob('../output/updated_scrap_*.csv')
 		print fileNames
 		for fileName in fileNames:
 			print 'Cur file is',fileName
@@ -79,10 +79,10 @@ class SaveImg():
 								print err
 					else:
 						print 'File already downloaded'
-
-    		if len(new_lis_imgs)!=0:
-    			row['listing_gallery']=",".join(new_lis_imgs)
-    			row['featured_image']=row['listing_gallery'][0]
+			
+			if len(new_lis_imgs)!=0:
+				row['listing_gallery']=",".join(new_lis_imgs)
+				row['featured_image']=row['listing_gallery'][0]
 	
 	def _writeCSV(self, fileName):
 		print "Writing to CSV..."
@@ -101,7 +101,3 @@ class SaveImg():
 if __name__=='__main__':
 	f=SaveImg()
 	f.process()
-
-
-
-
