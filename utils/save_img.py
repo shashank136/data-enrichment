@@ -82,7 +82,7 @@ class SaveImg():
 			
 			if len(new_lis_imgs)!=0:
 				row['listing_gallery']=",".join(new_lis_imgs)
-				row['featured_image']=row['listing_gallery'][0]
+				
 	
 	def _writeCSV(self, fileName):
 		print "Writing to CSV..."
