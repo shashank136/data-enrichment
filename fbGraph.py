@@ -485,7 +485,7 @@ class processGraph:
                 verified += self._isVerified(row,node)
                 self._addViews(row)
 
-                self._nodePosts(row,node)
+                #self._nodePosts(row,node)
                 self._nodeVideos(row,node)
                 self._nodePhotos(row,node)
                 self._nodeWorkingHours(row,node)
