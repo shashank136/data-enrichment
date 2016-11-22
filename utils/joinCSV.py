@@ -4,7 +4,7 @@ import sys
 import glob
 import os
 
-MAX_SIZE=3*10**6 # ~3mb
+MAX_SIZE=20*10**6 # ~20mb
 csv.field_size_limit(2147483647)
 def UTF8(data):
     try:
