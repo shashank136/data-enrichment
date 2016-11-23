@@ -25,7 +25,7 @@ class SaveImg:
 		self.FIELDS = []
 
 	def process(self):
-		fileNames = glob.glob('../output/updated_sample.csv')
+		fileNames = glob.glob('../output/Bookout.csv')
 		print fileNames
 		for fileName in fileNames:
 			print 'Cur file is', fileName
@@ -56,40 +56,28 @@ class SaveImg:
 			lis_imgs = []
 			new_lis_imgs = []
 			cont = ''
+			file_ext=''
 			h = hashlib.new('ripemd160')
 			s = row['listing_gallery']
 			lis_imgs = s.split(',')
 			for i in lis_imgs:
-				if 'static.career' not in i and 'http' in i :
+				if 'http' in i:
 					self.noi+=1
-					print '## Trying Method 1'
 					h.update(i + str(row['EduID']))
 					cont = h.hexdigest()
+					file_ext=i.split('.')[-1].strip()
+					print file_ext
 					print cont
-					if not os.path.exists('../output/sampleImgs/%s.jpg' % cont):
+					if not os.path.exists('../output/images/%s.%s' % (cont,file_ext)):
 						try:
-							req = requests.get(i)
-							if req.status_code == 200:
-								# print 'Downloading..'
-								with open('../output/sampleImgs/%s.jpg' % cont, 'wb') as f:
-									f.write(req.content)
-								f.close()
-								print 'Download success'
-							new_lis_imgs.append('%s.jpg' % cont)
-
-						except:
-							try:
-								print '## Trying Method 2'	
-								urllib.urlretrieve(i, '../output/sampleImgs/%s.jpg' % cont)
-								new_lis_imgs.append('%s.jpg' % cont)
-								print 'Download success'
-							except Exception as err:
-								print err
+							print '## Trying..'	
+							urllib.urlretrieve(i, '../output/images/%s.%s' % (cont,file_ext))
+							new_lis_imgs.append('%s.%s' % (cont,file_ext))
+							print 'Download success'
+						except Exception as err:
+							print err
 					else:
 						print 'File already downloaded'
-
-				else:
-					row['listing_gallery']=row['listing_gallery'].replace('http://static.careerbreeder.com/output/images/','').replace(' ','')
 						
 			if len(new_lis_imgs) != 0:
 				row['listing_gallery'] = ",".join(new_lis_imgs)
