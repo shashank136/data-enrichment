@@ -25,7 +25,7 @@ class SaveImg:
 		self.FIELDS = []
 
 	def process(self):
-		fileNames = glob.glob('../output/Bookout.csv')
+		fileNames = glob.glob('../output/updated_*.csv')
 		print fileNames
 		for fileName in fileNames:
 			print 'Cur file is', fileName
