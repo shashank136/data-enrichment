@@ -68,6 +68,8 @@ class SaveImg:
 					cont = h.hexdigest()
 					path = urlparse.urlparse(i).path
 					ext = os.path.splitext(path)[1]
+					if ext=='':
+						ext='.jpg' #tempory fix for google img
 					print "ext ",ext
 					file_ext=ext.strip()
 					print cont
