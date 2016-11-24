@@ -6,6 +6,7 @@ import sys, os
 import os.path
 import urllib
 import time
+import urlparse
 
 csv.field_size_limit(sys.maxsize)
 
@@ -65,19 +66,21 @@ class SaveImg:
 					self.noi+=1
 					h.update(i + str(row['EduID']))
 					cont = h.hexdigest()
-					file_ext=i.split('.')[-1].strip()
-					print file_ext
+					path = urlparse.urlparse(i).path
+					ext = os.path.splitext(path)[1]
+					print "ext ",ext
+					file_ext=ext.strip()
 					print cont
-					if not os.path.exists('../output/images/%s.%s' % (cont,file_ext)):
+					if not os.path.exists('../output/images/%s%s' % (cont,file_ext)):
 						try:
 							print '## Trying..'	
-							urllib.urlretrieve(i, '../output/images/%s.%s' % (cont,file_ext))
-							new_lis_imgs.append('%s.%s' % (cont,file_ext))
+							urllib.urlretrieve(i, '../output/images/%s%s' % (cont,file_ext))
+							new_lis_imgs.append('%s%s' % (cont,file_ext))
 							print 'Download success'
 						except Exception as err:
 							print err
 					else:
-						print 'File already downloaded'
+						new_lis_imgs.append('%s%s' % (cont,file_ext))
 						
 			if len(new_lis_imgs) != 0:
 				row['listing_gallery'] = ",".join(new_lis_imgs)
