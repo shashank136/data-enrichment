@@ -243,7 +243,7 @@ class AutoComplete():
                 flag,prediction =  self.analyze_prediction(row,address,state,False,True,temp_json)
 
             if flag == False:
-                if row['Pincode'] != '':
+                if row['Pincode']:
                     address = row['Name'] + ', ' + row['Pincode']
                     # True : Because same state results are insured, hence single prediction can be taken + Added advantage of wrong information in csv being overcomed
                     flag, prediction = self.analyze_prediction(row,address,state,True,True,temp_json)
