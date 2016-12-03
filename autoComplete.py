@@ -365,6 +365,16 @@ class AutoComplete():
             else:
                 row['avg_rating']=3.5
 
+    def _cityName(self, row, add_comp):
+        union_territory = ['chandigarh','delhi','puducherry','lakshadweep','andaman and nicobar islands','dadra and nagar haveli','daman and diu']
+        gen_case = row['City']       # genral case
+        for i in add_comp:
+            if 'administrative_area_level_1' in i['types'] and i['long_name'].lower() in union_territory:
+                return i['long_name'].title()
+            if 'locality' in i['types']:
+                gen_case = i['long_name'].title()
+        return gen_case
+
     def _googleUpdates(self):
         no_vprt=0
         for row in self.rows:
@@ -387,10 +397,9 @@ class AutoComplete():
                 for i in (add_comp):
                     if 'sublocality_level_1' in i['types']:
                         row['Locality']=i['long_name'].title()
-                    if 'administrative_area_level_2' in i['types']:
-                        row['City']=i['long_name'].title()
                     if 'postal_code' in i['types']:
                         row['Pincode']=i['long_name']
+                row['City'] = self._cityName(row, add_comp)
                 row['fullAddress']=resp['formatted_address']
                 row['lat']=resp['geometry']['location']['lat']
                 #print 'Lat',row['lat']
