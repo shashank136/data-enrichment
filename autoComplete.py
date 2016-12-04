@@ -263,13 +263,13 @@ class AutoComplete():
                         if not found:
                             flag = False
 
-                if flag == False:
+                if flag == False and row['City']:
                     address = row['Name'] + ', ' + row['City']
                     # False : If city name is a subset of locality name of any place, it will show in prediction and that may not be in same state. Hence state match is necessary
                     # True : Sometimes institute's name is a subset of a large name. For those cases a single prediction with the matching state leads to inaccuracy, given the earlier queries didn't work out. This case needs review, so keeping it True.
                     flag,prediction =  self.analyze_prediction(row,address,state,False,True,temp_json)
 
-                    if flag == False and valid:
+                    if flag == False and valid and row["Street Address"]:
                         address = row["Street Address"] + ' ' + row["Locality"] + ', ' + row["City"]
 
                         # False : State match is not a guarntee because of high noise in query.
