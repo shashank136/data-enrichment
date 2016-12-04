@@ -2,7 +2,7 @@
 import csv
 import logging
 import glob
-import os
+import os, sys
 import time
 import googlemaps
 from slugify import slugify
