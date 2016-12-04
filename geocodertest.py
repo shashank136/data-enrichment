@@ -85,7 +85,7 @@ class geocoderTest():
             self.removeDuplicates.processAll(self.rows)
             self._removeThumbs()
             print "\nCurrent file is",fileName,"\n"
-            
+
 #             self.download_images(self.rows)
             self.autoComp.main(self.rows,state)
             self._addGeocoding()
@@ -126,7 +126,6 @@ class geocoderTest():
         geoLocationFailed = 0;
         precise_count = 0
         city_geo={}
-        new_city=""
         print 'ADDING GEOCODES...'
         '''
         Each CSV file will be pertaining to a city.
@@ -134,23 +133,29 @@ class geocoderTest():
         '''
 
         for row in self.rows:
+            new_city, lat_prec, lng_prec = '', '', ''
             if (row["lat"] is None or row["lat"] == ""):
                 #row = self.rows[0]
                 #if row["City"] is None:
                 #    row = self.rows[1]#Highly unlikely that this will also fail
                 #row["City"] = row["City"].title()
-                new_city = row["City"].title()
-                row["City"]=new_city
+                if row['City']:
+                    new_city = row["City"].title()
+                    row["City"]=new_city
+                else:
+                    row['City'] = ''
                 # print("Processing: " + row["City"])
-                if new_city not in city_geo:
-                    address_prec = "%s, %s" % (row["City"], row["Country"]) #calculating precise location
-                    geocode_city=self.gmaps.geocode(address_prec) #geocodes for city
-                    city_geo[new_city]={'lat':geocode_city[0]['geometry']['location']['lat']}
-                    city_geo[new_city]['lng']=geocode_city[0]['geometry']['location']['lng']
-                    #print 'lat,lng ',lat_prec,lng_prec
-                    time.sleep(1); # To prevent error from Google API for concurrent calls
-                lat_prec=city_geo[new_city]['lat']
-                lng_prec=city_geo[new_city]['lng']
+                if new_city:
+                    if new_city not in city_geo:
+                        address_prec = "%s, %s" % (row["City"], row["Country"]) #calculating precise location
+                        geocode_city=self.gmaps.geocode(address_prec) #geocodes for city
+                        city_geo[new_city]={'lat':geocode_city[0]['geometry']['location']['lat']}
+                        city_geo[new_city]['lng']=geocode_city[0]['geometry']['location']['lng']
+                        #print 'lat,lng ',lat_prec,lng_prec
+                        time.sleep(1); # To prevent error from Google API for concurrent calls
+
+                    lat_prec=city_geo[new_city]['lat']
+                    lng_prec=city_geo[new_city]['lng']
 
                 if row["Locality"] is None:         # To handle any exception for operations on 'NoneType'
                     row["Locality"] = ""

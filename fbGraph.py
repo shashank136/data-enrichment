@@ -215,7 +215,7 @@ class processGraph:
         if row['Locality']:
             query = row['Name'] + ', ' + row['Locality']
             node=self.analyze_prediction(row,query,True)
-        if not node:
+        if not node and row['City']:
             query = row['Name'] + ', ' + row['City']
             node=self.analyze_prediction(row,query,True)
         if not node:
