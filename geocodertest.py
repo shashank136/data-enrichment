@@ -88,8 +88,8 @@ class geocoderTest():
 
 #             self.download_images(self.rows)
             self.autoComp.main(self.rows,state)
-            self._addGeocoding()
             self.fbGraph.processAll(self.rows,state)
+            self._addGeocoding()
             self._addFeaturedImage()
             self.mobiles.processAll(self.rows)
             self.filterMails(self.rows,fileBaseName)
@@ -163,7 +163,8 @@ class geocoderTest():
                 row["Locality"] = row["Locality"].title()
                 address = "%s %s, %s, %s, %s" % (row["Street Address"],row["Locality"],row["City"],row["Pincode"],row["Country"])
                 #if row['fullAddress'] is 'None' or row['fullAddress']=='':
-                row["fullAddress"] = address.title();
+                if not row['place_id']:
+                    row["fullAddress"] = address.title();
                 row["listing_locations"] = row["Locality"] + ", " + row["City"];
 
                 try:
