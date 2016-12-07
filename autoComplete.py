@@ -8,6 +8,7 @@ import parseGWorkHours  #parsing with google place details
 import parseWorkingHours
 import math
 import time
+from fbGraph import safe_dec_enc
 
 class AutoComplete():
     def __init__(self, key):
@@ -209,7 +210,7 @@ class AutoComplete():
         self._autoComplete(state)
         self._updateAddress()
         self._googleUpdates()
-        self._remove_intermediate_duplicates()
+        self._remove_intra_duplicates()
         self._addLocationPhoto()
         self._addRatingsReviews()
         self._formatWorkinghours()
@@ -429,10 +430,10 @@ class AutoComplete():
         main_fields = ['Name','Street Address','Locality','City','Pincode']
         k=""
         for i in main_fields:
-            k+=str(row.get(i)).lower().strip()
+            k+=str(safe_dec_enc(row.get(i), True)).lower().strip()
         return hash(k)
 
-    def _remove_intermediate_duplicates(self):
+    def _remove_intra_duplicates(self):
         groups =dict()
         for row in self.rows:
             hsh = self.rhash(row)
@@ -448,7 +449,7 @@ class AutoComplete():
                 self.rows.remove(row)
                 sub_count += 1
             total_count += sub_count
-        print '\nREMOVED INTERMEDIATES : ',total_count
+        print '\nREMOVED INTRA-DUPLICATES : ',total_count
 
     def _releaseMemory(self):
         self.json_objects.clear()
