@@ -23,11 +23,15 @@ def UTF8(data):
 # SAFE DECODING ENCODING
 def safe_dec_enc(data,basic=False):
     if data:
-        # BECAUSE DATA IS NOT GUARANTEED TO BE UTF-8 ENCODED
-        if basic:
-            return data.decode('ascii','ignore').encode('ascii')
-        return data.decode('utf-8','ignore').encode('utf-8')
-    # For NoneTypes
+        if isinstance(data, unicode):
+            if basic:
+                return data.encode('ascii','ignore')
+            return data.encode('utf-8','ignore')
+        else:
+            if basic:
+                # REMOVE NON-STANDARD UNICODE-POINTS FROM BYTE-STRING
+                return data.decode('ascii','ignore').encode('ascii')
+            return data.decode('utf-8','ignore').encode('utf-8')
     return ''
 
 class processGraph:
@@ -208,6 +212,7 @@ class processGraph:
         ################
         row['Name'] = safe_dec_enc(row['Name'],True)
         row['Locality'] = safe_dec_enc(row['Locality'],True)
+        row['City'] = safe_dec_enc(row['City'],True)
         ################
         self.viewFactor=0
         node = None
