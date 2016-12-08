@@ -16,6 +16,9 @@ class ProcessDuplicate():
 		other_repeat = 0
 		total = 0
 		number_of_files = 0
+		sulekha_temp = 0
+		sulekha_other_temp = 0
+
 		print "wait for execution to complete"
 		for fileName_1 in fileNames_1:
 			number_of_files = number_of_files + 1 #counts how many files are getting executed, not related with logic of this program
@@ -35,13 +38,16 @@ class ProcessDuplicate():
 							same_repeat = same_repeat + 1
 						else:
 							central[city][locality].append(name)
+							sulekha_temp = sulekha_temp + 1
 					else:
 						central[city][locality] = []
 						central[city][locality].append(name)
+						sulekha_temp = sulekha_temp + 1
 				else:
 					central[city] = {}
 					central[city][locality] = []
 					central[city][locality].append(name)
+					sulekha_temp = sulekha_temp + 1
 		
 		print "###############\nThe following data are for sulekha_temp:\n"
 		print "number of Same folder entries repeat: ",same_repeat
@@ -72,13 +78,16 @@ class ProcessDuplicate():
                                                         same_repeat = same_repeat + 1
                                                 else:
                                                         central_same[city][locality].append(name)
+							sulekha_other_temp = sulekha_other_temp + 1
                                         else:
                                                 central_same[city][locality] = []
                                                 central_same[city][locality].append(name)
+						sulekha_other_temp =sulekha_other_temp + 1
                                 else:
                                         central_same[city] = {}
                                         central_same[city][locality] = []
                                         central_same[city][locality].append(name)
+					sulekha_other_temp = sulekha_other_temp + 1
 
 		print "#############\nThe following are for sulekha_other_temp:\n"
 		print "number of Same entries in sulekha_other_temp: ",same_repeat
@@ -108,6 +117,8 @@ class ProcessDuplicate():
                 
                 print "End of execution\n"
                 print "number of same entries:",other_repeat
+		print "\n\nSulekha_temp distinct entries: ",sulekha_temp
+		print "\nSulekha_other_temp distinct entries: ",sulekha_other_temp
 
 	def readCSV(self, fileName):
 		inputFile = open(fileName, 'r')
