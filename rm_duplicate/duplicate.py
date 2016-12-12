@@ -110,13 +110,21 @@ class ProcessDuplicate():
                 			if locality in central[city].keys():
                 				if name in central[city][locality]:
                 					other_repeat = other_repeat + 1
+                				else:
+                					writeCSV(self,fileName_2)
+                			else:
+                				writeCSV(self,fileName_2)
+                		else:
+                			writeCSV(self,fileName_2)
 							# remove the # tags of the following to check results
 							#print "row in sulekha_other_temp:\n",row
 							#print "\ncentral data:\n",central[city][locality],"\n",name,"\n",locality,"\n",city
 							#inp = input()
-                
+
+        		        
                 print "End of execution\n"
                 print "number of same entries:",other_repeat
+                inp = input()
 		print "\n\nSulekha_temp distinct entries: ",sulekha_temp
 		print "\nSulekha_other_temp distinct entries: ",sulekha_other_temp
 
@@ -126,6 +134,46 @@ class ProcessDuplicate():
 		self.FIELDS = reader.fieldnames;
 		self.rows.extend(reader);
 		inputFile.close()
+
+	def _titleCase(self):
+        separators=[' ',',','.','/','-']
+        count = 0
+        for row in self.rows:
+            for key in ['Street Address', 'Locality', 'City', 'Country', 'listing_locations', 'autocomplete_precise_address', 'author', 'fullAddress']:
+                if key in row:
+                    data = row[key]
+                separate=True
+                new=[]
+                if not data:
+                    continue
+                for i in data:
+                    if i in separators:
+                        separate = True
+                    elif separate:
+                        new.append(i.upper())
+                        separate = False
+                        continue
+                    new.append(i)
+                row[key] = ''.join(new)
+                if data!=row[key]:
+                    count+=1
+
+	def _writeCSV(self, fileName):
+        print "Writing to CSV..."
+        try:
+            self._titleCase()
+            # DictWriter
+            csvFile = open("output/"+fileName, 'a');
+            writer = csv.DictWriter(csvFile, fieldnames=self.FIELDS);
+            # write header
+            writer.writerow(dict(zip(self.FIELDS, self.FIELDS)))
+            for i in row:
+                row[i] = UTF8(row[i])
+            writer.writerow(row)
+            csvFile.close()
+        except Exception as err:
+            logging.exception("Something awful happened when processing result.csv");
+
 
 if __name__ == "__main__":
 	f = ProcessDuplicate()
