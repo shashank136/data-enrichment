@@ -16,6 +16,7 @@ class ProcessDuplicate():
 
 	def process(self):
 		fileNames_2 = glob.glob('./sulekha_other_temp/*.csv')
+		#fileNames_2 = glob.glob('./output/*.csv') #this is to cross-verify results
 		fileNames_1 = glob.glob('./sulekha_temp/*.csv')
 		central = {}
 		central_same = {}
@@ -66,7 +67,8 @@ class ProcessDuplicate():
 		same_repeat = 0
 		total = 0
 		number_of_files = 0
-
+		#print fileNames_2
+		#inp = input()
 		for fileName_2 in fileNames_2:
                         self.rows = []
                         self.FIELDS = []
@@ -105,13 +107,14 @@ class ProcessDuplicate():
 ##################################################################################
                 for fileName_2 in fileNames_2:
                 	self.rows = []
-                	self.FIELDS = []
+         
                	        fileBaseName = os.path.splitext(os.path.basename(fileName_2))[0]
-			csvFile = open("output/"+fileBaseName, 'w');
+			csvFile = open('output/'+fileBaseName+'.csv', 'w');
                         writer = csv.DictWriter(csvFile, fieldnames=self.FIELDS);
         	        # write header
 	                writer.writerow(dict(zip(self.FIELDS, self.FIELDS)))
 			csvFile.close()
+			self.FIELDS = []
 	
                 	self.readCSV(fileName_2)
                 	for row in self.rows:
@@ -135,9 +138,8 @@ class ProcessDuplicate():
 							#inp = input()
 
         		        
-                	print "End of execution\n"
-                	print "number of same entries:",other_repeat
-                	inp = input()
+               	print "End of execution\n"
+               	print "number of same entries:",other_repeat
 		print "\n\nSulekha_temp distinct entries: ",sulekha_temp
 		print "\nSulekha_other_temp distinct entries: ",sulekha_other_temp
 
@@ -147,36 +149,12 @@ class ProcessDuplicate():
 		self.FIELDS = reader.fieldnames;
 		self.rows.extend(reader);
 		inputFile.close()
-
-	def _titleCase(self):
-	        separators=[' ',',','.','/','-']
-	        count = 0
-	        for row in self.rows:
-	            for key in ['Street Address', 'Locality', 'City', 'Country', 'listing_locations', 'autocomplete_precise_address', 'author', 'fullAddress']:
-	                if key in row:
-	                    data = row[key]
-	                separate=True
-	                new=[]
-	                if not data:
-	                    continue
-	                for i in data:
-	                    if i in separators:
-	                        separate = True
-	                    elif separate:
-	                        new.append(i.upper())
-	                        separate = False
-	                        continue
-	                    new.append(i)
-	                row[key] = ''.join(new)
-	                if data!=row[key]:
-	                    count+=1
 	
 	def writeCSV(self, fileName,row):
-	        #print "Writing to CSV..."
 	        try:
 	            #self._titleCase()
 	            # DictWriter
-	            csvFile = open("output/"+fileName, 'a');
+	            csvFile = open('output/'+fileName+'.csv', 'a');
 	            writer = csv.DictWriter(csvFile, fieldnames=self.FIELDS);
 	            for i in row:
 	                row[i] = UTF8(row[i])
