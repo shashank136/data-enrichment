@@ -39,23 +39,25 @@ class ProcessDuplicate():
 				city = row['City']
 				locality = row['Locality']
 				name = row['Name']
+				id = row['EduID']
 
 				if city in central.keys():
 					if locality in central[city].keys():
-						if name in central[city][locality]:
+						if name in central[city][locality].keys():
 							same_repeat = same_repeat + 1
 						else:
-							central[city][locality].append(name)
+							central[city][locality][name] = id
 							sulekha_temp = sulekha_temp + 1
 					else:
-						central[city][locality] = []
-						central[city][locality].append(name)
+						central[city][locality] = {}
+						central[city][locality][name] = id
 						sulekha_temp = sulekha_temp + 1
 				else:
 					central[city] = {}
-					central[city][locality] = []
-					central[city][locality].append(name)
+					central[city][locality] = {}
+					central[city][locality][name] = id
 					sulekha_temp = sulekha_temp + 1
+
 		
 		print "###############\nThe following data are for sulekha_temp:\n"
 		print "number of Same folder entries repeat: ",same_repeat
@@ -124,8 +126,10 @@ class ProcessDuplicate():
 
                 		if city in central.keys():
                 			if locality in central[city].keys():
-                				if name in central[city][locality]:
+                				if name in central[city][locality].keys():
                 					other_repeat = other_repeat + 1
+							print "\n\nEduID getting removed from sulekha_temp: ",central[city][locality][name]
+							print "EduId getting removed from sulekha_other_temp: ",row['EduID']
                 				else:
                 					self.writeCSV(fileBaseName,row)
                 			else:
