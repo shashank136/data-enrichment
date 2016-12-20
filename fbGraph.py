@@ -101,7 +101,7 @@ class processGraph:
         return ''.join(phone_number)
 
     def website_parser(self,x):
-        if x == '' or x is None:
+        if not x:
             return ''
         ############
         #INITIAL CLEANUP
@@ -173,14 +173,14 @@ class processGraph:
                         return node
 
             if 'phone' in place and phones:
-                if self.match_phone_nos(phones,place['phone']):
+                if self.match_phone_nos(phones, safe_dec_enc(place['phone'])):
                     node = self.graph.get(place['id']+"?fields=name,location,is_verified,description,phone,link,cover,website,emails")
                     return node
 
             for email in emails:
                 if 'emails' in place and email:
                     for x in place['emails']:
-                        if x.encode('utf-8','ignore') == email:
+                        if email == safe_dec_enc(x):
                             node = self.graph.get(place['id']+"?fields=name,location,is_verified,description,phone,link,cover,website,emails")
                             return node
 
@@ -194,7 +194,7 @@ class processGraph:
 
                 for place in search_result['data']:
                     if 'website' in place and website:
-                        if self.match_website(website,place['website']):
+                        if self.match_website(website, safe_dec_enc(place['website'])):
                             if not match:
                                 correct_place_id=place['id']
                                 match=True
