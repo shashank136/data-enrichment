@@ -138,7 +138,7 @@ class processGraph:
             resp_nos.append(resp)
 
         for i in range(len(resp_nos)):
-            resp_nos[i] = resp_nos[i].encode('ascii',errors='ignore')
+            resp_nos[i] = safe_dec_enc(resp_nos[i])
 
         for x in resp_nos:
             if self.number_parser(x) in phones:
