@@ -89,11 +89,11 @@ class geocoderTest():
 #             self.download_images(self.rows)
             self.autoComp.main(self.rows,state)
             self.fbGraph.processAll(self.rows,state)
+            self.wikipedia.processAll(self.rows)
             self._addGeocoding()
             self._addFeaturedImage()
             self.mobiles.processAll(self.rows)
             self.filterMails(self.rows,fileBaseName)
-##            self.wikipedia.processAll(self.rows) #not complete yet
             '''
             added patternmatcher
             '''
@@ -115,7 +115,7 @@ class geocoderTest():
 
         reader.fieldnames.extend(["Website2","Mail2", "listing_locations", "featured_image", "location_image", "fullAddress", "lat", "lng","viewport","prec_loc"]);
         reader.fieldnames.extend(["rating","reviews","author","Total Views","avg_rating","place_details", "fb_page", "fb_verified"]);
-        reader.fieldnames.extend(['autocomplete_precise_address','place_id','perma_closed','Mobiles','wikipedia','fb_posts','fb_photos','fb_videos','fb_workingHours'])
+        reader.fieldnames.extend(['autocomplete_precise_address','place_id','perma_closed','Mobiles','wikipedia_url','fb_posts','fb_photos','fb_videos','fb_workingHours'])
         self.FIELDS = reader.fieldnames;
         self.rows.extend(reader);
         #self.rows=self.new_rows
@@ -258,7 +258,7 @@ class geocoderTest():
         try:
             self._titleCase()
             # DictWriter
-            csvFile = open(fileName, 'w');
+            csvFile = open(fileName, 'wb');
             writer = csv.DictWriter(csvFile, fieldnames=self.FIELDS);
             # write header
             writer.writerow(dict(zip(self.FIELDS, self.FIELDS)))
