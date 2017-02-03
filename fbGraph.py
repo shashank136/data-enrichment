@@ -12,7 +12,6 @@ KEYS_FB=['1812886018965623|a43d798be9fba8e94d3f4f98d0333b62',   #Anon
          '1697721727215546|a372f9c8b412e8b053094042fc4b42e6',   #Shantanu
           ]# format is AppID|AppSecret, API version: 2.7
 
-key_index = 0
 
 def UTF8(data):
     try:
@@ -36,7 +35,7 @@ def safe_dec_enc(data,basic=False):
 
 class processGraph:
     def __init__(self, key=None):
-        global key_index
+        self.key_index = 0
         self.viewFactor=0
         """
     >>> Graph = processGraph()
@@ -45,12 +44,12 @@ class processGraph:
     """
         if not key:
             while True:
-                self.graph = GraphAPI(KEYS_FB[key_index])
+                self.graph = GraphAPI(KEYS_FB[self.key_index])
                 try:
                     self.graph.search("test","place")
                     break
                 except:
-                    key_index= (key_index+1)%len(KEYS_FB)
+                    self.key_index = (self.key_index+1)%len(KEYS_FB)
         else:
             self.graph = GraphAPI(key)
 
@@ -61,6 +60,17 @@ class processGraph:
         state_reader = csv.DictReader(state_file, dialect=csv.excel)
         self.state_data_rows.extend(state_reader)
         state_file.close()
+
+    def graceful_request(self, url):
+        while True:
+            try:
+                result = self.graph.get(url)
+                return result
+            except:
+                print 'ERROR. CHANGING KEY from index', self.key_index,
+                self.key_index = (self.key_index+1)%len(KEYS_FB)
+                print 'to', self.key_index
+                self.graph = GraphAPI(KEYS_FB[self.key_index])
 
     def number_parser(self,x):
         flag_add = False
@@ -164,24 +174,24 @@ class processGraph:
         if row['Mail2']:
             emails.append(row['Mail2'].strip())
 
-        search_result=self.graph.get("search?q=%s&fields=location,phone,emails,website&type=place&limit=50"%(query))
+        search_result = self.graceful_request("search?q=%s&fields=location,phone,emails,website&type=place&limit=50"%(query))
         for place in search_result['data']:
             if 'location' in place:
                 if 'zip' in place['location'] :
                     if unicode(pin) == unicode(place['location']['zip']) and unicode(pin):
-                        node = self.graph.get(place['id']+"?fields=name,location,is_verified,description,phone,link,cover,website,emails")
+                        node = self.graceful_request(place['id']+"?fields=name,location,is_verified,description,phone,link,cover,website,emails")
                         return node
 
             if 'phone' in place and phones:
                 if self.match_phone_nos(phones, safe_dec_enc(place['phone'])):
-                    node = self.graph.get(place['id']+"?fields=name,location,is_verified,description,phone,link,cover,website,emails")
+                    node = self.graceful_request(place['id']+"?fields=name,location,is_verified,description,phone,link,cover,website,emails")
                     return node
 
             for email in emails:
                 if 'emails' in place and email:
                     for x in place['emails']:
                         if email == safe_dec_enc(x):
-                            node = self.graph.get(place['id']+"?fields=name,location,is_verified,description,phone,link,cover,website,emails")
+                            node = self.graceful_request(place['id']+"?fields=name,location,is_verified,description,phone,link,cover,website,emails")
                             return node
 
         # WEBSITE MATCH IS NOT SAFE. HENCE SHOULD BE DONE ONLY IF ABOVE MEASURES FAILS.
@@ -203,7 +213,7 @@ class processGraph:
                                 break
 
                 if match and not multiple_match:
-                    node = self.graph.get(correct_place_id+"?fields=name,location,is_verified,description,phone,link,cover,website,emails")
+                    node = self.graceful_request(correct_place_id+"?fields=name,location,is_verified,description,phone,link,cover,website,emails")
                     return node
 
         return dict()
@@ -315,7 +325,7 @@ class processGraph:
     def _addPicture(self,row,node):
         if not 'id' in node:
             return 0
-        profile_pic=self.graph.get(node['id']+"/picture?height=500&width=500&redirect")
+        profile_pic = self.graceful_request(node['id']+"/picture?height=500&width=500&redirect")
         if 'data' in profile_pic:
             if 'url' in profile_pic['data'] and 'is_silhouette' in profile_pic['data']:
                 if not profile_pic['data']['is_silhouette']:
@@ -362,7 +372,7 @@ class processGraph:
         photos = []
         after = ''
         while True:
-            resp = self.graph.get(node['id']+'/photos?type=uploaded&fields=source&limit=10&after=%s'%after)
+            resp = self.graceful_request(node['id']+'/photos?type=uploaded&fields=source&limit=10&after=%s'%after)
             if 'data' in resp:
                 for i in resp['data']:
                     photos.append(i['source'])
@@ -390,7 +400,7 @@ class processGraph:
         videos = []
         after = ''
         while True:
-            resp = self.graph.get(node['id']+'/videos?type=uploaded&fields=source,title,description&limit=10&after=%s'%after)
+            resp = self.graceful_request(node['id']+'/videos?type=uploaded&fields=source,title,description&limit=10&after=%s'%after)
             if 'data' in resp:
                 for i in resp['data']:
                     videos.append(i)
@@ -423,7 +433,7 @@ class processGraph:
     def _nodeWorkingHours(self,row,node):
         if 'id' not in node:
             return
-        resp = self.graph.get(node['id']+'?fields=hours')
+        resp = self.graceful_request(node['id']+'?fields=hours')
         row_data = ''
         if 'hours' in resp:
             try:
@@ -439,7 +449,7 @@ class processGraph:
         posts = []
         after = ''
         while True:
-            resp = self.graph.get(node['id']+'/posts?fields=message,type,created_time&limit=90&next=%s'%after)
+            resp = self.graceful_request(node['id']+'/posts?fields=message,type,created_time&limit=90&next=%s'%after)
             if 'data' in resp:
                 for i in resp['data']:
                     if i['type'] == 'status' and 'message' in i:
