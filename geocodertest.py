@@ -18,7 +18,6 @@ from facepy import GraphAPI
 from autoComplete import AutoComplete
 from fbGraph import processGraph,UTF8
 from mediaWiki import mediaWiki
-from validate_email import filterMails
 from removeDuplicates import removeDuplicates
 # from DownloadImage import DownloadImages
 
@@ -49,7 +48,6 @@ class geocoderTest():
         self.rows = []
         #self.new_rows=[]
         self.FIELDS = []
-        self.filterMails=filterMails
         self.autoComp = AutoComplete(key=KEYS)
         self.fbGraph =  processGraph(key=None)
         self.mobiles = processMobile()
@@ -93,7 +91,6 @@ class geocoderTest():
             self._addGeocoding()
             self._addFeaturedImage()
             self.mobiles.processAll(self.rows)
-            self.filterMails(self.rows,fileBaseName)
             '''
             added patternmatcher
             '''
