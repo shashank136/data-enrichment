@@ -1,7 +1,6 @@
 import csv
 import glob,sys
-import joinCSV
-csv.field_size_limit(sys.maxsize)
+csv.field_size_limit(sys.maxint)
 
 class Inter_Duplicates:
     def __init__(self):
@@ -10,7 +9,7 @@ class Inter_Duplicates:
         self.removed_EduID = []
 
     def read_csv(self,file_path,fields,rows):
-        with open(file_path, 'r') as csvFile:
+        with open(file_path, 'rb') as csvFile:
             reader = csv.DictReader(csvFile, dialect=csv.excel)
             fields.extend(reader.fieldnames)
             rows.extend(reader)
@@ -43,13 +42,14 @@ class Inter_Duplicates:
         print '\tFinal Records :',len(rows)
 
     def write_csv(self,file_path,fields,rows):
-        with open(file_path, 'w') as csvFile:
+        with open(file_path, 'wb') as csvFile:
             writer = csv.DictWriter(csvFile, fieldnames=fields)
             writer.writerow(dict(zip(fields,fields)))
             for row in rows:
                 writer.writerow(row)
 
-    def main(self,files):
+    def main(self):
+        files = glob.glob("../output/updated_*.csv")
         for file_path in files:
             print file_path
             fields = []
@@ -62,9 +62,3 @@ class Inter_Duplicates:
         print 'UNIVERSE SIZE : ',len(self.hash_universe)
         print 'TOTAL REMOVED : ',len(self.removed_EduID)
         print '\n',self.removed_EduID
-
-if __name__ == '__main__':
-    joinCSV.ConcatCSV().join('../output/updated_*.csv')
-    files = glob.glob("../output/updated_*.csv")
-    obj = Inter_Duplicates()
-    obj.main(files)

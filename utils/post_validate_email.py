@@ -7,7 +7,7 @@ import logging
 import threading
 import csv, glob
 import requests,os,sys
-csv.field_size_limit(sys.maxsize)
+csv.field_size_limit(sys.maxint)
 
 class MailBoxLayer():
     def __init__(self):
@@ -15,7 +15,7 @@ class MailBoxLayer():
                                 'b1a65e65dff1e93fb5f9283820fbba4a',
                                 '1955555c2c300784c2cc21274d0551d2','eabdeed7f1b28191840584118c3f1c07',
                                 '0ebe9383b47d0027e5959918694f09a4','f578821fb823568f551675e8e6066a0c',
-                                'c2d5df125595605fc33c17acfad677a2','0dbf3f0ad9e3a5aa631fc18c84619067',     
+                                'c2d5df125595605fc33c17acfad677a2','0dbf3f0ad9e3a5aa631fc18c84619067',
                                 '7b7ea008ae52906aea30d641c68a9ac0','c93a76c7df906b57d2d215acbad4f7f3',
                                 'b0c7ca3ff27a9a78c85ae3790c7df9fc','afe24335c8e116ec0cacca27deaf3262',
                                 'afe24335c8e116ec0cacca27deaf3262','ddeaa4d54802ae4503566c57b04ff130',
@@ -144,7 +144,8 @@ class Manager:
             accepted+=t.getAccepted()
         print("\tTotal Rejected: %s Total Accepted: %s"%(len(rejected),len(accepted)))
 
-    def main(self,files):
+    def main(self):
+        files = glob.glob("../output/updated_*.csv")
         for file_path in files:
             print '\n',file_path
             if os.path.basename(file_path) in self.processed_files:
@@ -155,8 +156,3 @@ class Manager:
             self.read_csv(file_path,fields,rows)
             self.filterMails(rows)
             self.write_csv(file_path,fields,rows)
-
-if __name__ == '__main__':
-    files = glob.glob("../output/updated_*.csv")
-    obj = Manager()
-    obj.main(files)
