@@ -8,7 +8,7 @@ from fbGraph import safe_dec_enc
 
 class mediaWiki:
     def __init__(self):
-        self.rows_per_thread = 20
+        pass
 
     def get_infobox(self, html):
         soup = BeautifulSoup(html, 'html.parser')
@@ -104,12 +104,14 @@ class mediaWiki:
             data.append(None)
         except requests.exceptions.ConnectionError:
             pass
+        except requests.exceptions.ChunkedEncodingError:
+            pass
 
     def gracious_request(self, x, isPage):
         data = []
         start_time = 0
         while not data:
-            if (time.time() - start_time) > 6:
+            if (time.time() - start_time) > 12:
                 th1 = threading.Thread(target=self.gracious_request_slave, args=(x, isPage, data))
                 th1.daemon = True
                 th1.start()
@@ -146,7 +148,6 @@ class mediaWiki:
         for row in self.rows[begin:end]:
             x = self.getPage(row)
             if x:
-                self.hits += 1
                 row['wikipedia_url'] = x.url
         print 'THREAD {0:<3} DONE. PROCESSED ROWS: {1}'.format(i+1, len(self.rows[begin:end]))
 
@@ -163,16 +164,26 @@ class mediaWiki:
             _.start()
         for _ in slaves:
             _.join()
-        print 'TOTAL HITS:',self.hits
 
     def processAll(self, rows):
         print '\nFetching data from Wikipedia'
 
         self.hits = 0
         self.rows = rows
-        if len(self.rows) < 200:
-            self.rows_per_thread = 10
-        if len(self.rows) > 1200:
-            self.rows_per_thread = 50
 
+        N = len(self.rows)
+        if N < 400:
+            self.rows_per_thread = 10
+        elif 400 < N < 1200:
+            self.rows_per_thread = 20
+        else:
+            self.rows_per_thread = N/60
+
+        print 'ROWS PER THREAD:', self.rows_per_thread
         self.thread_master()
+
+        hits = 0
+        for row in self.rows:
+            if row['wikipedia_url']:
+                hits += 1
+        print 'TOTAL HITS:', hits
