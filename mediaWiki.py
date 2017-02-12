@@ -6,7 +6,8 @@ import time, sys
 import requests
 from fbGraph import safe_dec_enc
 
-class mediaWiki:
+# FOR FINDING CORRECT WIKI URL
+class Url_Finder:
     def __init__(self):
         pass
 
@@ -166,9 +167,6 @@ class mediaWiki:
             _.join()
 
     def processAll(self, rows):
-        print '\nFetching data from Wikipedia'
-
-        self.hits = 0
         self.rows = rows
 
         N = len(self.rows)
@@ -182,8 +180,108 @@ class mediaWiki:
         print 'ROWS PER THREAD:', self.rows_per_thread
         self.thread_master()
 
+
+# FOR EXTRACTING DATA FROM WIKI URL
+class Data_Extractor:
+    def __init__(self):
+        self.req_fields = ['Website','Established','Location','Type','Campus','Affiliations','Principal','Motto','Academic staff']
+
+    def get_infobox_attributes(self, html):
+        soup = BeautifulSoup(html, 'html.parser')
+        infobox = soup.find('table', class_='infobox')
+        key_pairs = {}
+        if infobox:
+            blocks = infobox.findAll('tr')
+            for block in blocks:
+                attr = block.find('th')
+                if attr:
+                    val = block.find('td')
+                    if val:
+                        attr = attr.text.encode('ascii','ignore').strip()
+                        val = val.text.encode('ascii','ignore')
+                        val = filter(lambda i: i, val.splitlines())
+                        if len(val):
+                            key_pairs[attr] = val[0]
+                        else:
+                            key_pairs[attr] = ''
+        return key_pairs
+
+    def symlink_cleaner(self, data, ext=False):
+        start = ['[']
+        end = [']']
+        if ext:
+            start.append('(')
+            end.append(')')
+        symlink = False
+        cleaned = ''
+        for _ in data:
+            if _ in start and not symlink:
+                symlink = True
+            if not symlink:
+                cleaned += _
+            if _ in end and symlink:
+                symlink = False
+        return cleaned.strip()
+
+    def established_cleaner(self, data):
+        if not data:
+            return ''
+
+        data = data.split(';')
+        if len(data) > 1:
+            return data[0]
+        else:
+            data = data[0]
+        return self.symlink_cleaner(data, True)
+
+    def website_cleaner(self, data):
+        if not data:
+            return ''
+
+        if len(data) <= 5:
+            return None
+        return self.symlink_cleaner(data)
+
+    def master_cleaner(self, attributes):
+        if 'Website' in attributes:
+            attributes['Website'] =  self.website_cleaner(attributes['Website'])
+        if 'Established' in attributes:
+            attributes['Established'] = self.established_cleaner(attributes['Established'])
+        if 'Affiliations' in attributes:
+            attributes['Affiliations'] = self.symlink_cleaner(attributes['Affiliations'])
+        if 'Principal' in attributes:
+            attributes['Principal'] = self.symlink_cleaner(attributes['Principal'])
+
+        for key in attributes.keys():
+            if attributes[key]:
+                attributes[key] = attributes[key].strip()
+
+    def extract_from_wikipedia(self, row):
+        html = requests.get(row['wikipedia_url'])
+        attributes = self.get_infobox_attributes(html.text)
+        self.master_cleaner(attributes)
+        for field in self.req_fields:
+            if attributes.get(field):
+                row[field] = attributes[field]
+
+    def processAll(self, rows):
         hits = 0
-        for row in self.rows:
+        for row in rows:
             if row['wikipedia_url']:
+                self.extract_from_wikipedia(row)
                 hits += 1
+        return hits
+
+class mediaWiki:
+    def __init__(self):
+        pass
+
+    def processAll(self, rows):
+        print '\nFETCHING DATA FROM WIKIPEDIA'
+        find = Url_Finder()
+        find.processAll(rows)
+
+        print '\nUPDATING DATA FROM WIKIPEDIA'
+        extract = Data_Extractor()
+        hits = extract.processAll(rows)
         print 'TOTAL HITS:', hits

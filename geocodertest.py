@@ -113,6 +113,7 @@ class geocoderTest():
         reader.fieldnames.extend(["Website2","Mail2", "listing_locations", "featured_image", "location_image", "fullAddress", "lat", "lng","viewport","prec_loc"]);
         reader.fieldnames.extend(["rating","reviews","author","Total Views","avg_rating","place_details", "fb_page", "fb_verified"]);
         reader.fieldnames.extend(['autocomplete_precise_address','place_id','perma_closed','Mobiles','wikipedia_url','fb_posts','fb_photos','fb_videos','fb_workingHours'])
+        reader.fieldnames.extend(['Established','Location','Type', 'Campus', 'Affiliations', 'Principal', 'Motto', 'Academic staff'])
         self.FIELDS = reader.fieldnames;
         self.rows.extend(reader);
         #self.rows=self.new_rows
