@@ -485,7 +485,7 @@ class processGraph:
     def processAll(self,rows,state):
         details,link,cover,website,pincode,street,dp,verified,phone,email=0,0,0,0,0,0,0,0,0,0 #stats
         total = len(rows)
-        print("Fetching info from FB Graph")
+        print("\nFetching info from FB Graph")
         print 'STATE : ',state
         for progress,row in enumerate(rows):
             try:

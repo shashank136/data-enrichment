@@ -26,7 +26,7 @@ class removeDuplicates:
         self.rows = rows
         mergers=0
         groups=self.group_similar()
-        print "Initial size of records"+str(len(self.rows))
+        print "\nInitial size of records"+str(len(self.rows))
         for i in groups:
             if len(groups[i])>1:
 ##                print "Now merging "+groups[i][0]['Name']+" "+groups[i][1]['Name']

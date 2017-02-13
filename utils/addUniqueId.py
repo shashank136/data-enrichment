@@ -6,7 +6,7 @@ class AddUniqueId():
     def __init__(self):
         self.rows = []
         self.FIELDS = []
-        self.searchInPath = "../input/test/";
+        self.searchInPath = "../input";
         self.eduIdName = "EduID";
 
     def getFileNames(self, root, file_ext):
@@ -41,8 +41,8 @@ class AddUniqueId():
                     row.insert(0, eduId)
                     all.append(row)
                 writer.writerows(all);
-                os.remove(fileName);
-                os.rename(fileName+TMPEXTENTION, fileName);
+            os.remove(fileName);
+            os.rename(fileName+TMPEXTENTION, fileName);
             print("***Successfully processed "+str(fileCount)+" file(s).***");
 
 if __name__ == '__main__':

@@ -124,7 +124,7 @@ class geocoderTest():
         geoLocationFailed = 0;
         precise_count = 0
         city_geo={}
-        print 'ADDING GEOCODES...'
+        print '\nADDING GEOCODES...'
         '''
         Each CSV file will be pertaining to a city.
         We can save almost half of the calls to geocoder API if we calculate the City cordinates only once.
