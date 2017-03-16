@@ -9,201 +9,17 @@ import parseWorkingHours
 import math
 import time
 from fbGraph import safe_dec_enc
+from API.gmap_placeid_api import GMAP_ID
 
 class AutoComplete():
     def __init__(self, key):
         self.GOOGLE_API_KEYS = key
         self.key_index=0
         self.key = self.GOOGLE_API_KEYS[self.key_index]
-        self.chain_failure = False      # TO DISTINGUISH BETWEEN CONCURRENT CALL FAILURE and QUERY-OVERLIMIT FAILURE
-
-        self.autocomplete_flag = ['VERIFIED', 'NOT VERIFIED']
         self.rows = []
         # GLOBAL JSON DICTIONARY TO BE USED BY ALL FUNCTION RATHER THAN MAKING  DIRECT API CALLS
         self.json_objects = dict()
-
-    def graceful_request(self,url):
-        chain_count = 0
-        while True:
-            resp = requests.get(url+self.GOOGLE_API_KEYS[self.key_index]).json()
-            if resp['status'] == 'OK':
-                break
-            if resp['status'] == 'ZERO_RESULTS':
-                break
-            if resp['status'] == 'NOT_FOUND':
-                return None
-
-            print 'ERROR - RESENDING REQUEST'
-
-            # TO DISTINGUISH BETWEEN SINGLE AND MULTIPLE FAILURES
-            if self.chain_failure:
-                print 'CHANGING KEYS'
-                self.key_index = (self.key_index+1)%len(self.GOOGLE_API_KEYS)
-                self.chain_failure = False
-                print 'NEW KEY : ',self.GOOGLE_API_KEYS[self.key_index]
-            else:
-                self.chain_failure = True
-                chain_count += 1
-
-            if chain_count == len(self.GOOGLE_API_KEYS):
-                print 'CONCURRENT CALL FAILURE. WAITING.....'
-                chain_count = 0
-                time.sleep(1)
-
-        self.chain_failure = False
-        return resp
-
-    def website_parser(self,x):
-        if x == '' or x is None:
-            return ''
-        ############
-        #INITIAL CLEANUP
-        x = x.strip()
-        x = x.replace('//www.','//')
-        #############
-
-        filler_flag = False
-        fillers = ['/','#']
-        for _ in fillers:
-            if _ in x[-1]:
-                filler_flag = True
-        if filler_flag:
-            x = x[:-1]
-        return x
-
-    # REQUIRES COUNTRY CODE TO START WITH +, IF PRESENT
-    def number_parser(self, x):
-        flag_add = False
-        numerals = ['0','1','2','3','4','5','6','7','8','9']
-        allowed_start_symbols = numerals + ['+']
-
-        ############
-        #INITIAL CLEANUP
-        x = x.strip()
-        idx=0
-        for _ in x:
-            if _ in allowed_start_symbols:
-                break
-            idx += 1
-        x = x[idx:]
-        #############
-
-        if x.find('+91') == 0:
-            flag_add = True
-
-        word = ''
-        phone_number = []
-
-        if flag_add:
-            word = list(x[3:])
-        else:
-            word = list(x)
-
-        non_zero_encountered = False
-        for letter in word:
-            # REMOVES 0 FROM START OF NUMBERS
-            if not non_zero_encountered:
-                if letter in numerals[1:]:
-                    non_zero_encountered = True
-
-            if non_zero_encountered:
-                if letter in numerals:
-                    phone_number.append(letter)
-        return ''.join(phone_number)
-
-    def analyze_prediction(self, row, address,state, allow_single, allow_state_matching,temp_json):
-        address = address.replace('#','')
-        extract = lambda x:'' if x is None else x
-        phones = []
-        websites = []
-
-        for i in range(1,6):
-            if row['Phone'+str(i)]:
-                phones.append(self.number_parser(row['Phone'+str(i)]))
-        if row['Website']:
-            websites.append(row['Website'].strip())
-        if row['Website2']:
-            websites.append(row['Website2'].strip())
-
-        url = 'https://maps.googleapis.com/maps/api/place/autocomplete/json?input='+address+'&types=establishment&location=0,0&radius=20000000&components=country:IN&key='
-        resp = self.graceful_request(url)
-        if resp is None:
-            return False,''
-
-        if len(resp["predictions"]) == 1 and allow_single:
-            return True,resp["predictions"][0]
-
-        if len(resp["predictions"]) >= 1:
-            if allow_state_matching:
-                found = False
-                multiple_match = False
-                correct_prediction = ''
-                for x in resp["predictions"]:
-                    for term in x["terms"]:
-                        if term['value'].strip().lower() == state.strip().lower():
-                            if not found:
-                                correct_prediction = x
-                                found = True
-                            else:
-                                multiple_match = True
-                if found and not multiple_match:
-                    self.update_json_object(correct_prediction['place_id'])
-                    return True,correct_prediction
-
-            for x in resp["predictions"]:
-                resp_x = temp_json.get(x['place_id'])
-                if resp_x is None:
-                    url='https://maps.googleapis.com/maps/api/place/details/json?placeid='+x['place_id']+'&key='
-                    resp_x = self.graceful_request(url)
-                    temp_json[x['place_id']] = resp_x
-
-                # To prevent errors when graceful_request() returns 'None'
-                if resp_x is None:
-                    break
-                resp_x = resp_x.get('result')
-                # THIS GUARANTEES THE COUNTRY CODE TO START WITH +
-                international_number = self.number_parser(extract(resp_x.get('international_phone_number')))
-                for phone in phones:
-                    if self.number_parser(phone) == international_number:
-                        self.update_json_object(x['place_id'])
-                        return True, x
-
-            for website in websites:
-                website = self.website_parser(website)
-                found = False
-                multiple_match = False
-                correct_prediction = ''
-                for x in resp["predictions"]:
-                    resp_x = temp_json.get(x['place_id'])
-                    if resp_x is None:
-                        url='https://maps.googleapis.com/maps/api/place/details/json?placeid='+x['place_id']+'&key='
-                        resp_x = self.graceful_request(url)
-                        temp_json[x['place_id']] = resp_x
-
-                    # To prevent errors when graceful_request() returns 'None'
-                    if resp_x is None:
-                        break
-                    resp_x = resp_x.get('result')
-                    website_in_json = extract(resp_x.get('website'))
-                    if website == self.website_parser(website_in_json):
-                        if not found:
-                            correct_prediction = x
-                            found = True
-                        else:
-                            multiple_match = True
-                if found and not multiple_match:
-                    return True,correct_prediction
-        return False,''
-
-    def update_json_object(self, place_id):
-        if self.json_objects.get('place_id') is None:
-            url='https://maps.googleapis.com/maps/api/place/details/json?placeid='+place_id+'&key='
-            resp_x = self.graceful_request(url)
-            if resp_x is None:
-                return False
-            resp_x = resp_x.get('result')
-            self.json_objects[place_id]=resp_x
-            return True
+        self.gmap_api = GMAP_ID()
 
     def main(self,rows_data,state):
         self.rows = rows_data
@@ -225,65 +41,27 @@ class AutoComplete():
 
         print '\nRUNNING AUTOCOMPLETE'
         print 'STATE : ',state
-        row_idx=2
 
         for row in self.rows:
-            temp_json = dict()
-            address = ''
-            valid = True                    # COMPLETE ADDRESS AVAILABLE
-
-            flag = False
-            prediction = ''
-
-            if not row['Locality']:
-                valid = False
-            else:
-                address = row['Name'] + ', ' + row['Locality']
-                # False : Same state results not insured, hence not going for single prediction
-                # True : To ensure same state match
-                flag,prediction =  self.analyze_prediction(row,address,state,False,True,temp_json)
-
-            if flag == False:
-                if row['Pincode']:
-                    address = row['Name'] + ', ' + row['Pincode']
-                    # True : Because same state results are insured, hence single prediction can be taken + Added advantage of wrong information in csv being overcomed
-                    flag, prediction = self.analyze_prediction(row,address,state,True,True,temp_json)
-                    # FOR LONG QUERIES IT'S NOT ALWAYS INSURED THAT PINCODE IS IN PREDICTION. THIS MAKES THE DECISION TO NOT CHECK STATE, A WRONG STEP.
-                    # HENCE COFORMING HERE FOR THOSE CASES
-                    # AS IT's NOT A GENERAL CASE Flag CANNOT BE FALSE
-                    if flag==True:
-                        found = False
-                        matched_parts = prediction["matched_substrings"]
-                        for part in matched_parts:
-                            offset = int(part["offset"])
-                            length = int(part["length"])
-                            word = prediction["description"][offset:(offset+length)]
-                            if row['Pincode'].strip() in word.strip():
-                                found=True
-                                break
-                        if not found:
-                            flag = False
-
-                if flag == False and row['City']:
-                    address = row['Name'] + ', ' + row['City']
-                    # False : If city name is a subset of locality name of any place, it will show in prediction and that may not be in same state. Hence state match is necessary
-                    # True : Sometimes institute's name is a subset of a large name. For those cases a single prediction with the matching state leads to inaccuracy, given the earlier queries didn't work out. This case needs review, so keeping it True.
-                    flag,prediction =  self.analyze_prediction(row,address,state,False,True,temp_json)
-
-                    if flag == False and valid and row["Street Address"]:
-                        address = row["Street Address"] + ' ' + row["Locality"] + ', ' + row["City"]
-
-                        # False : State match is not a guarntee because of high noise in query.
-                        # False : Single matching state is not a guaranteed. because of high noise in query
-                        flag, prediction =  self.analyze_prediction(row,address,state,False,False,temp_json)
-
-            if flag == True and self.update_json_object(prediction['place_id']):
-                fixed_count += 1
-                row['place_id'] = prediction['place_id']
+            row['State'] = state
+            ######################
+            resp = self.gmap_api.get_id(row)
+            if resp['status_code'] == 201:
+                row['place_id'] = resp['place_id']
+                resp_x = self.gmap_api.get_id_details(resp['place_id'])
+                if resp_x['status_code'] == 201:
+                    self.json_objects[resp['place_id']]=resp_x['place_details']
+                    fixed_count += 1
+                elif (400 <= resp_x['status_code'] < 600):
+                    print 'ERROR:', repr(resp_x)
+                    sys.exit(0)
+            elif (400 <= resp['status_code'] < 600):
+                print 'ERROR:', repr(resp)
+                sys.exit(0)
             else:
                 no_prediction_count += 1
-
-            row_idx += 1
+            #####################
+            row.pop('State', None)
 
         print '####################'
         print 'VERIFIED     : ',fixed_count

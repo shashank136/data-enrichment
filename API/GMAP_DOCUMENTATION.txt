@@ -1,0 +1,74 @@
+                                    Autocomplete Documentation
+                                    ==========================
+
+1) Instantiate the class 'GMAP_ID'.
+2) Call the function 'get_id(row)' on the instance.
+    - where the argument 'row' is a python dictionary.
+
+E.g.:
+    >> obj = GMAP_ID()
+    >> row = {'Name':'x', 'City':'y', 'State':'z'}
+    >> resp = obj.get_id(row)
+    >> print resp
+    {'status_code':201, 'place_id':'abcdefghijkl'}
+
+
+
+Expected KEYS in 'row' (python dictionary)
+------------------------------------------
+Providing more optional keys substantially increases the probability of prediction.
+
+    row['Name']           - Needed
+    row['Locality']       - Optional
+    row['Street Address']	- Optional
+    row['Pincode']        - Optional
+    row['City']           - Needed
+    row['State']          - Needed
+
+    row['Phone1']         - Optional
+    row['Phone2']         - Optional
+    row['Phone3']         - Optional
+    row['Phone4']         - Optional
+    row['Phone5']         - Optional
+    row['Phone6']         - Optional
+    row['Website']        - Optional
+    row['Website2']       - Optional
+
+NOTE:
+  (1) If you find it hard to get the 'State' key but you have the 'City' key,
+      refer to "data-enrichment/state_data/city_state.csv" where 'City' can be used to find the corresponding 'State'.
+      'data-enrichment' uses that internally.
+      The API currently doesn't refers to it automatically, because the list is not exhaustive and names keep on changing.
+      Thus dependency lies on the end-user for 'State'.
+
+
+
+RETURN VALUE
+------------
+Generic Python Dictionary with keys shown below:
+
+{
+status_code:,
+place_id:''
+}
+
+    - where 'status_code' is python Integer
+            'place_id' is python Unicode String
+
+
+
+STATUS CODE
+-----------
+This corresponds to the 'status_code' key in returned value.
+Ensure its sanity before deciding anything from 'place_id'.
+
+    >> 2xx = REQUEST SUCCESS
+        201 = FOUND
+        205 = NOT FOUND
+
+    >> 4xx = CLIENT ERROR
+        401 = Required Key NON-EXISTENT
+
+    >> 5xx = API ERROR
+        501 = Google Autocomplete API Keys are Exhausted
+        502 = Google Place API Keys are Exhausted
