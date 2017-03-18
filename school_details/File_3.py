@@ -24,6 +24,7 @@ def school_details(new_url):
     district = new_container[3].text.strip()
     postal_address = new_container[4].text.strip()
     pin_code = new_container[5].text.strip()
+    std_code = new_container[6].text.strip()
     phone_no = new_container[7].text.strip()
     email_id = new_container[10].text.strip()
     web_site = new_container[11].text.strip()
@@ -43,6 +44,7 @@ def school_details(new_url):
     new_state = '\"' + state + '\"'
     new_district = '\"' + district + '\"'
     new_pin_code = '\"' + pin_code + '\"'
+    new_std_code = '\"' + std_code + '\"'
     new_year_of_foundation = '\"' + year_of_foundation + '\"'
     new_phone_no = '\"' + phone_no + '\"'
     new_postal_address = '\"' + postal_address + '\"'
@@ -67,6 +69,7 @@ def school_details(new_url):
     print 'affiliation_no : ' + new_affiliation_no
     print 'Address        : ' + new_postal_address + ',' + new_district + ',' + new_state
     print 'pin            : ' + new_pin_code
+    print 'STD_Code       : ' + new_std_code
     print 'phone_no       : ' + new_phone_no
     print 'email_id       : ' + new_email_id
     print 'web_site       : ' + new_web_site
@@ -84,6 +87,6 @@ def school_details(new_url):
     filename = "shashank_kumar.csv"
     f = open(filename, "a")
     f.write(
-        new_school_name + "," + new_affiliation_no + "," + new_state + "," + new_district + "," + new_postal_address + "," + new_pin_code + "," + new_phone_no + "," + new_email_id + "," + new_web_site + "," + new_year_of_foundation + "," + new_date_of_opening + "," + new_name_of_principal + "," + sex + "," + new_status_of_school + "," + new_type_of_affiliation + "," + new_affiliation_period_from + "," + new_affiliation_period_to + "," + new_name_of_trust_society_managing_committee + "\n")
+        new_school_name + "," + new_affiliation_no + "," + new_state + "," + new_district + "," + new_postal_address + "," + new_pin_code + "," + new_std_code + "," + new_phone_no + "," + new_email_id + "," + new_web_site + "," + new_year_of_foundation + "," + new_date_of_opening + "," + new_name_of_principal + "," + sex + "," + new_status_of_school + "," + new_type_of_affiliation + "," + new_affiliation_period_from + "," + new_affiliation_period_to + "," + new_name_of_trust_society_managing_committee + "\n")
 
     f.close()
