@@ -144,7 +144,7 @@ class processMobile:
                     #print 'phn no',phn_no_ls[i]
                     splt_no=phn_no_ls[i][0:-len(phn_no_ls[i])/2+n]+'/'+phn_no_ls[i][-len(phn_no_ls[i])/2+n:]
                     phn_no_ls[i]=splt_no
-                    #print 'splt_no',splt_no
+#                    #print 'splt_no',splt_no
             for no in phn_no_ls:
                 if '/' not in no:
                     noslist.append(no)
@@ -154,7 +154,7 @@ class processMobile:
                         if len(splt_list[i])>=10:
                             continue
                         splt_list[i]=splt_list[0][0:-len(splt_list[i])]+splt_list[i]
-                    noslist=noslist+splt_list
+                     noslist=noslist+splt_list
             noslist=set(noslist)
             noslist=list(noslist)
 
@@ -206,6 +206,6 @@ class processMobile:
     ##            sys.stdout.flush()
                 row['Mobiles'] = ', '.join(list(set(mobiles)))
                 #print(row['Mobiles'])
-                return True
+                return True # 
         except:
             return False        
