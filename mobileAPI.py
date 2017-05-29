@@ -206,7 +206,6 @@ class processMobile:
     ##            sys.stdout.flush()
                 row['Mobiles'] = ', '.join(list(set(mobiles)))
                 #print(row['Mobiles'])
-                value = True
-                return value
+                return True
         except:
-            return value        
+            return False        
