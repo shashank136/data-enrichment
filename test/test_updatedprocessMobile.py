@@ -16,8 +16,8 @@ def test_processMobile():
 	# val = False
 	tabb = updatedprocessMobile.processAll(src_list)
 
-	 for i in check_tab:
-		if check_tab[i] == True:
+	 for i in tabb:
+		if tabb[i] == True:
 			print(str(i)+' '+'following is a vaid number')
 		else:
 			print(str(i)+' '+'following is an invalid number')
