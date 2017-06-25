@@ -17,7 +17,7 @@ class processMobileSTDcode:
         ph_len = len(telephone.replace('-','').repace(" ","")) # remove extra space and invaid characters e.g. '54-66121  3231'
         # print("length of telephone number is: "+str(ph_len))
 
-        readfile = open('std_data.csv',"r")
+        readfile = open('data-enrichment/std_data/std_data.csv',"r")
         filereader = csv.reader(readfile)
 
         if ph_len < 9:
