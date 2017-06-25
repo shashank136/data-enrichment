@@ -15,8 +15,14 @@ def test_processMobile():
 
 	# val = False
 	tabb = updatedprocessMobile.processAll(src_list)
+	
+	def compare(dictOne,dictTwo):
+    		for keyOne in dictOne:
+        		for keyTwo in dictTwo:
+            			if keyOne == keyTwo[]:
+                		print(dictTwo[keyTwo])
 
-	 for i in tabb:
+	for i in tabb:
 		if tabb[i] == True:
 			print(str(i)+' '+'following is a vaid number')
 		else:
