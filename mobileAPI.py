@@ -144,7 +144,7 @@ class processMobile:
                     #print 'phn no',phn_no_ls[i]
                     splt_no=phn_no_ls[i][0:-len(phn_no_ls[i])/2+n]+'/'+phn_no_ls[i][-len(phn_no_ls[i])/2+n:]
                     phn_no_ls[i]=splt_no
-#                    #print 'splt_no',splt_no
+                    #print 'splt_no',splt_no
             for no in phn_no_ls:
                 if '/' not in no:
                     noslist.append(no)
@@ -154,7 +154,7 @@ class processMobile:
                         if len(splt_list[i])>=10:
                             continue
                         splt_list[i]=splt_list[0][0:-len(splt_list[i])]+splt_list[i]
-                     noslist=noslist+splt_list
+                    noslist=noslist+splt_list
             noslist=set(noslist)
             noslist=list(noslist)
 
@@ -179,9 +179,10 @@ class processMobile:
                     
 
     def processAll(self,rows):
-        self.checkNo(rows)
+        self.checkNo(rows) # checks for bad phone number and telephone numbers
         total=len(rows)
-        #value = False
+        number_check=0
+        dict_check = {}
 
         try:
 
@@ -198,14 +199,21 @@ class processMobile:
 
                         if cleaned_no[0:2]=='91':
                             cleaned_no=cleaned_no[2:]
-                        
+                            number_check = cleaned_no
+                            dict_check[number_check] = True
                             
                         mobiles.append(cleaned_no)
+                        #print "Accepted number is :" + str(number_check)
+                    else:
+                        number_check = cleaned_no
+                        dict_check[number_check] = False
+                        #print "rejected number is :" + str(number_check)
     ##            pro=int((float(progress)/total)*100) #Avoiding bad characters in log file
     ##            sys.stdout.write("\r%d%%"%pro)
     ##            sys.stdout.flush()
                 row['Mobiles'] = ', '.join(list(set(mobiles)))
                 #print(row['Mobiles'])
-                return True # 
+                return dict_check
         except:
-            return False        
+            pass
+            print "Error occured"        
