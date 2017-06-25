@@ -3,7 +3,7 @@ import updatedprocessMobile
 
 def test_processMobile():
 
-	src = open('../sample_data.csv')
+	src = open('test/sample_data.csv')
 
 	src_reader = csv.reader(src,delimiter=",")
 
